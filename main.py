@@ -1,14 +1,6 @@
 from inquirer2 import prompt
 
-
-def stock_analyzer():
-    # Your code for the stock analyzer goes here
-    print("Stock Analyzer Selected")
-
-
-def code_generator():
-    # Your code for the code generator goes here
-    print("Code Generator Selected")
+from stock_analizer.analizer import Analyzer
 
 
 def main():
@@ -29,9 +21,9 @@ def main():
     choice = answers['menu_choice']
 
     if choice == 'Stock Analyzer':
-        stock_analyzer()
+        Analyzer.start_app()
     elif choice == 'Code Generator':
-        code_generator()
+        pass
 
 
 if __name__ == '__main__':
