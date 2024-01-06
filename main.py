@@ -1,16 +1,38 @@
-# This is a sample Python script.
-
-# Press F5 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from inquirer2 import prompt
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def stock_analyzer():
+    # Your code for the stock analyzer goes here
+    print("Stock Analyzer Selected")
 
 
-# Press the green button in the gutter to run the script.
+def code_generator():
+    # Your code for the code generator goes here
+    print("Code Generator Selected")
+
+
+def main():
+    questions = [
+        {
+            'type': 'list',
+            'name': 'menu_choice',
+            'message': 'Select an option:',
+            'choices': [
+                'Stock Analyzer',
+                'Code Generator',
+            ],
+        },
+    ]
+
+    answers = prompt.prompt(questions)
+
+    choice = answers['menu_choice']
+
+    if choice == 'Stock Analyzer':
+        stock_analyzer()
+    elif choice == 'Code Generator':
+        code_generator()
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()
