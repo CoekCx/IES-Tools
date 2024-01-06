@@ -1,0 +1,143 @@
+<Path>Projekat - Stefan</Path>
+
+	<cim:PhaseImpedanceData rdf:ID="599593448_PID">
+		<cim:PhaseImpedanceData.b>6</cim:PhaseImpedanceData.b>
+		<cim:PhaseImpedanceData.r>5</cim:PhaseImpedanceData.r>
+		<cim:PhaseImpedanceData.sequenceNumber>8</cim:PhaseImpedanceData.sequenceNumber>
+		<cim:PhaseImpedanceData.x>7</cim:PhaseImpedanceData.x>
+		<cim:IdentifiedObject.aliasName>PID1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PID_44321</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>PhaseImpedanceData1</cim:IdentifiedObject.name>
+	</cim:PhaseImpedanceData>
+	<cim:PhaseImpedanceData rdf:ID="1250788534_PID">
+		<cim:PhaseImpedanceData.b>1</cim:PhaseImpedanceData.b>
+		<cim:PhaseImpedanceData.r>2</cim:PhaseImpedanceData.r>
+		<cim:PhaseImpedanceData.sequenceNumber>3</cim:PhaseImpedanceData.sequenceNumber>
+		<cim:PhaseImpedanceData.x>4</cim:PhaseImpedanceData.x>
+		<cim:IdentifiedObject.aliasName>PID1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PID_14631</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>PhaseImpedanceData2</cim:IdentifiedObject.name>
+	</cim:PhaseImpedanceData>
+
+	<cim:PerLengthPhaseImpedance rdf:ID="1574983524_PLPI">
+		<cim:PerLengthPhaseImpedance.conductorCount>1</cim:PerLengthPhaseImpedance.conductorCount>
+		<cim:IdentifiedObject.aliasName>PLPI1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PLPI_48562</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>PerLengthPhaseImpedance1</cim:IdentifiedObject.name>
+	</cim:PerLengthPhaseImpedance>
+	<cim:PerLengthPhaseImpedance rdf:ID="7549865314_PLPI">
+		<cim:PerLengthPhaseImpedance.conductorCount>2</cim:PerLengthPhaseImpedance.conductorCount>
+		<cim:IdentifiedObject.aliasName>PLPI2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PLPI_44362</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>PerLengthPhaseImpedance2</cim:IdentifiedObject.name>
+	</cim:PerLengthPhaseImpedance>
+
+	<cim:PerLengthSequenceImpedance rdf:ID="1250788534_PLSI">
+		<cim:PerLengthSequenceImpedance.b0ch>1</cim:PerLengthSequenceImpedance.b0ch>
+		<cim:PerLengthSequenceImpedance.bch>2</cim:PerLengthSequenceImpedance.bch>
+		<cim:PerLengthSequenceImpedance.g0ch>3</cim:PerLengthSequenceImpedance.g0ch>
+		<cim:PerLengthSequenceImpedance.gch>4</cim:PerLengthSequenceImpedance.gch>
+		<cim:PerLengthSequenceImpedance.r>5</cim:PerLengthSequenceImpedance.r>
+		<cim:PerLengthSequenceImpedance.r0>6</cim:PerLengthSequenceImpedance.r0>
+		<cim:PerLengthSequenceImpedance.x>7</cim:PerLengthSequenceImpedance.x>
+		<cim:PerLengthSequenceImpedance.x0>8</cim:PerLengthSequenceImpedance.x0>
+		<cim:IdentifiedObject.aliasName>PLSI1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PLSI_55533</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>PerLengthSeqImp1</cim:IdentifiedObject.name>
+	</cim:PerLengthSequenceImpedance>
+	<cim:PerLengthSequenceImpedance rdf:ID="1272157892_PLSI">
+		<cim:PerLengthSequenceImpedance.b0ch>2.3</cim:PerLengthSequenceImpedance.b0ch>
+		<cim:PerLengthSequenceImpedance.bch>1.2</cim:PerLengthSequenceImpedance.bch>
+		<cim:PerLengthSequenceImpedance.g0ch>1.3</cim:PerLengthSequenceImpedance.g0ch>
+		<cim:PerLengthSequenceImpedance.gch>0.4</cim:PerLengthSequenceImpedance.gch>
+		<cim:PerLengthSequenceImpedance.r>5.3</cim:PerLengthSequenceImpedance.r>
+		<cim:PerLengthSequenceImpedance.r0>6</cim:PerLengthSequenceImpedance.r0>
+		<cim:PerLengthSequenceImpedance.x>0.7</cim:PerLengthSequenceImpedance.x>
+		<cim:PerLengthSequenceImpedance.x0>1.8</cim:PerLengthSequenceImpedance.x0>
+		<cim:IdentifiedObject.aliasName>PLSI2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PLSI_55312</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>PerLengthSeqImp2</cim:IdentifiedObject.name>
+	</cim:PerLengthSequenceImpedance>
+
+	<cim:SeriesCompensator rdf:ID="124903727_SC">
+		<cim:SeriesCompensator.r>12</cim:SeriesCompensator.r>
+		<cim:SeriesCompensator.r0>13</cim:SeriesCompensator.r0>
+		<cim:SeriesCompensator.x>14</cim:SeriesCompensator.x>
+		<cim:SeriesCompensator.x0>15</cim:SeriesCompensator.x0>
+		<cim:IdentifiedObject.aliasName>COMP1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>COMP_45678</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Compensator1</cim:IdentifiedObject.name>
+	</cim:SeriesCompensator>
+    <cim:SeriesCompensator rdf:ID="939140759_SC">
+		<cim:SeriesCompensator.r>2</cim:SeriesCompensator.r>
+		<cim:SeriesCompensator.r0>1</cim:SeriesCompensator.r0>
+		<cim:SeriesCompensator.x>4</cim:SeriesCompensator.x>
+		<cim:SeriesCompensator.x0>1.5</cim:SeriesCompensator.x0>
+		<cim:IdentifiedObject.aliasName>COMP2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>COMP_11671</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Compensator2</cim:IdentifiedObject.name>
+	</cim:SeriesCompensator>
+
+	<cim:DCLineSegment rdf:ID="939140759_DCLS">
+		<cim:Conductor.length>44</cim:Conductor.length>
+		<cim:IdentifiedObject.aliasName>DCLS1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>DCLS_99988</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>DCLineSegment1</cim:IdentifiedObject.name>
+	</cim:DCLineSegment>
+	<cim:DCLineSegment rdf:ID="124903727_DCLS">
+		<cim:Conductor.length>54</cim:Conductor.length>
+		<cim:IdentifiedObject.aliasName>DCLS2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>DCLS_99981</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>DCLineSegment2</cim:IdentifiedObject.name>
+	</cim:DCLineSegment>
+
+	<cim:ACLineSegment rdf:ID="124903727_ACLS">
+		<cim:ACLineSegment.b0ch>54</cim:ACLineSegment.b0ch>
+		<cim:ACLineSegment.bch>1</cim:ACLineSegment.bch>
+		<cim:ACLineSegment.g0ch>43</cim:ACLineSegment.g0ch>
+		<cim:ACLineSegment.gch>5</cim:ACLineSegment.gch>
+		<cim:ACLineSegment.PerLengthImpedance rdf:resource="#1250788534_PLSI"/>
+		<cim:ACLineSegment.r>66</cim:ACLineSegment.r>
+		<cim:ACLineSegment.r0>5</cim:ACLineSegment.r0>
+		<cim:ACLineSegment.x>4</cim:ACLineSegment.x>
+		<cim:ACLineSegment.x0>2</cim:ACLineSegment.x0>
+		<cim:Conductor.length>35</cim:Conductor.length>
+		<cim:IdentifiedObject.aliasName>ACLS1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>ACLS_11111</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ACLineSegment1</cim:IdentifiedObject.name>
+	</cim:ACLineSegment>
+	<cim:ACLineSegment rdf:ID="939140759_ACLS">
+		<cim:ACLineSegment.b0ch>5.4</cim:ACLineSegment.b0ch>
+		<cim:ACLineSegment.bch>2</cim:ACLineSegment.bch>
+		<cim:ACLineSegment.g0ch>4.3</cim:ACLineSegment.g0ch>
+		<cim:ACLineSegment.gch>5</cim:ACLineSegment.gch>
+		<cim:ACLineSegment.PerLengthImpedance rdf:resource="#7549865314_PLPI"/>
+		<cim:ACLineSegment.r>6.6</cim:ACLineSegment.r>
+		<cim:ACLineSegment.r0>2</cim:ACLineSegment.r0>
+		<cim:ACLineSegment.x>1</cim:ACLineSegment.x>
+		<cim:ACLineSegment.x0>2.7</cim:ACLineSegment.x0>
+		<cim:Conductor.length>22</cim:Conductor.length>
+		<cim:IdentifiedObject.aliasName>ACLS2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>ACLS_22222</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ACLineSegment2</cim:IdentifiedObject.name>
+	</cim:ACLineSegment>
+
+	<cim:Terminal rdf:ID="599593624_TER">
+		<cim:Terminal.ConductingEquipment rdf:resource="#124903727_ACLS"/>
+		<cim:IdentifiedObject.aliasName>TER1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TER_77880</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Terminal</cim:IdentifiedObject.name>
+	</cim:Terminal>
+    <cim:Terminal rdf:ID="124903727_TER">
+		<cim:Terminal.ConductingEquipment rdf:resource="#124903727_SC"/>
+		<cim:IdentifiedObject.aliasName>TER2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TER_77882</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Terminal2</cim:IdentifiedObject.name>
+	</cim:Terminal>
+	<cim:Terminal rdf:ID="939140759_TER">
+		<cim:Terminal.ConductingEquipment rdf:resource="#939140759_DCLS"/>
+		<cim:IdentifiedObject.aliasName>TER3</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TER_77883</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Terminal3</cim:IdentifiedObject.name>
+	</cim:Terminal>
+</rdf:RDF>

@@ -1,0 +1,129 @@
+<Path>Projekat</Path>
+
+<!-- Process -->
+	<cim:Process rdf:ID="P1">
+		<cim:Process.classificationType>official</cim:Process.classificationType>
+		<cim:Process.processType>first</cim:Process.processType>
+		<cim:IdentifiedObject.aliasName>Procescic1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>P1</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Process1</cim:IdentifiedObject.name>
+	</cim:Process>
+	<cim:Process rdf:ID="P2">
+		<cim:Process.classificationType>unofficial</cim:Process.classificationType>
+		<cim:Process.processType>first</cim:Process.processType>
+		<cim:IdentifiedObject.aliasName>Procescic2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>P2</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Process2</cim:IdentifiedObject.name>
+	</cim:Process>
+
+<!-- MarketDocument -->
+	<cim:MarketDocument rdf:ID="MD1">
+		<cim:MarketDocument.Process rdf:resource="#P1"/>
+		<cim:Document.createdDateTime>2022-01-01T12:00:00</cim:Document.createdDateTime>
+		<cim:Document.lastModifiedDateTime>2022-03-01T12:00:00</cim:Document.lastModifiedDateTime>
+		<cim:Document.revisionNumber>1</cim:Document.revisionNumber>
+		<cim:Document.subject>subject1</cim:Document.subject>
+		<cim:Document.title>title1</cim:Document.title>
+		<cim:Document.type>type1</cim:Document.type>
+		<cim:IdentifiedObject.aliasName>TrzisniDokumentic1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>MD1</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>MarketDocument1</cim:IdentifiedObject.name>
+	</cim:MarketDocument>
+	<cim:MarketDocument rdf:ID="MD2">
+		<cim:MarketDocument.Process rdf:resource="#P2"/>
+		<cim:Document.createdDateTime>2022-02-02T12:00:00</cim:Document.createdDateTime>
+		<cim:Document.lastModifiedDateTime>2022-03-02T12:00:00</cim:Document.lastModifiedDateTime>
+		<cim:Document.revisionNumber>2</cim:Document.revisionNumber>
+		<cim:Document.subject>subject2</cim:Document.subject>
+		<cim:Document.title>title2</cim:Document.title>
+		<cim:Document.type>type2</cim:Document.type>
+		<cim:IdentifiedObject.aliasName>TrzisniDokumentic2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>MD2</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>MarketDocument2</cim:IdentifiedObject.name>
+	</cim:MarketDocument>
+
+<!-- Period -->
+	<cim:Period rdf:ID="PE1">
+		<cim:Period.MarketDocument rdf:resource="#MD1"/>
+		<cim:IdentifiedObject.aliasName>Intervalic1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PE1</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Period1</cim:IdentifiedObject.name>
+	</cim:Period>
+	<cim:Period rdf:ID="PE2">
+		<cim:Period.MarketDocument rdf:resource="#MD2"/>
+		<cim:IdentifiedObject.aliasName>Intervalic2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PE2</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Period2</cim:IdentifiedObject.name>
+	</cim:Period>
+
+<!-- Point -->
+	<cim:Point rdf:ID="PO1">
+		<cim:Point.Period rdf:resource="#PE1"/>
+		<cim:Point.position>5</cim:Point.position>
+		<cim:IdentifiedObject.aliasName>Tackica1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PO1</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Point1</cim:IdentifiedObject.name>
+	</cim:Point>
+	<cim:Point rdf:ID="PO2">
+		<cim:Point.Period rdf:resource="#PE2"/>
+		<cim:Point.position>3</cim:Point.position>
+		<cim:IdentifiedObject.aliasName>Tackica2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PO2</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Point2</cim:IdentifiedObject.name>
+	</cim:Point>
+
+<!-- TimeSeries -->
+	<cim:TimeSeries rdf:ID="TS1">
+		<cim:TimeSeries.MarketDocument rdf:resource="#MD1"/>
+		<cim:TimeSeries.objectAggregation>low</cim:TimeSeries.objectAggregation>
+		<cim:TimeSeries.Period rdf:resource="#PE1"/>
+		<cim:TimeSeries.product>milk</cim:TimeSeries.product>
+		<cim:TimeSeries.version>1.0</cim:TimeSeries.version>
+		<cim:IdentifiedObject.aliasName>VremenskaSerijica1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TS1</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>TimeSeries1</cim:IdentifiedObject.name>
+	</cim:TimeSeries>
+	<cim:TimeSeries rdf:ID="TS2">
+		<cim:TimeSeries.MarketDocument rdf:resource="#MD2"/>
+		<cim:TimeSeries.objectAggregation>mid</cim:TimeSeries.objectAggregation>
+		<cim:TimeSeries.Period rdf:resource="#PE2"/>
+		<cim:TimeSeries.product>cheese</cim:TimeSeries.product>
+		<cim:TimeSeries.version>2.0</cim:TimeSeries.version>
+		<cim:IdentifiedObject.aliasName>VremenskaSerijica2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TS2</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>TimeSeries2</cim:IdentifiedObject.name>
+	</cim:TimeSeries>
+	<cim:TimeSeries rdf:ID="TS3">
+		<cim:TimeSeries.MarketDocument rdf:resource="#MD1"/>
+		<cim:TimeSeries.objectAggregation>low</cim:TimeSeries.objectAggregation>
+		<cim:TimeSeries.Period rdf:resource="#PE2"/>
+		<cim:TimeSeries.product>chocolate</cim:TimeSeries.product>
+		<cim:TimeSeries.version>1.4</cim:TimeSeries.version>
+		<cim:IdentifiedObject.aliasName>VremenskaSerijica3</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TS3</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>TimeSeries3</cim:IdentifiedObject.name>
+	</cim:TimeSeries>
+	<cim:TimeSeries rdf:ID="TS4">
+		<cim:TimeSeries.MarketDocument rdf:resource="#MD2"/>
+		<cim:TimeSeries.objectAggregation>hich</cim:TimeSeries.objectAggregation>
+		<cim:TimeSeries.Period rdf:resource="#PE1"/>
+		<cim:TimeSeries.product>apple</cim:TimeSeries.product>
+		<cim:TimeSeries.version>2.3</cim:TimeSeries.version>
+		<cim:IdentifiedObject.aliasName>VremenskaSerijica4</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TS4</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>TimeSeries4</cim:IdentifiedObject.name>
+	</cim:TimeSeries>
+
+<!-- MeasurementPoint -->
+	<cim:MeasurementPoint rdf:ID="MP1">
+		<cim:MeasurementPoint.TimeSeries rdf:resource="#TS1"/>
+		<cim:IdentifiedObject.aliasName>MernaTackica1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>MP1</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>MeasurementPoint1</cim:IdentifiedObject.name>
+	</cim:MeasurementPoint>
+	<cim:MeasurementPoint rdf:ID="MP2">
+		<cim:MeasurementPoint.TimeSeries rdf:resource="#TS2"/>
+		<cim:IdentifiedObject.aliasName>MernaTackica2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>MP2</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>MeasurementPoint2</cim:IdentifiedObject.name>
+	</cim:MeasurementPoint>

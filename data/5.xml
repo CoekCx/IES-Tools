@@ -1,0 +1,110 @@
+<Path>2024\IES Projekat Damjan Tadic</Path>
+
+	<cim:SeriesCompensator rdf:ID="124903727_SC">
+		<cim:SeriesCompensator.r>12</cim:SeriesCompensator.r>
+		<cim:SeriesCompensator.r0>13</cim:SeriesCompensator.r0>
+		<cim:SeriesCompensator.x>14</cim:SeriesCompensator.x>
+		<cim:SeriesCompensator.x0>15</cim:SeriesCompensator.x0>
+		<cim:IdentifiedObject.aliasName>COMP1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>COMP_45678</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>SeriesCompensator1</cim:IdentifiedObject.name>
+	</cim:SeriesCompensator>
+        <cim:SeriesCompensator rdf:ID="939140759_SC">
+		<cim:SeriesCompensator.r>2</cim:SeriesCompensator.r>
+		<cim:SeriesCompensator.r0>1</cim:SeriesCompensator.r0>
+		<cim:SeriesCompensator.x>4</cim:SeriesCompensator.x>
+		<cim:SeriesCompensator.x0>1.5</cim:SeriesCompensator.x0>
+		<cim:IdentifiedObject.aliasName>COMP2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>COMP_11671</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>SeriesCompensator2</cim:IdentifiedObject.name>
+	</cim:SeriesCompensator>
+
+	<cim:DCLineSegment rdf:ID="939140759_DCLS">
+		<cim:Conductor.length>44</cim:Conductor.length>
+		<cim:IdentifiedObject.aliasName>DCLS1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>DCLS_99988</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>DCLineSegment1</cim:IdentifiedObject.name>
+	</cim:DCLineSegment>
+	<cim:DCLineSegment rdf:ID="124903727_DCLS">
+		<cim:Conductor.length>54</cim:Conductor.length>
+		<cim:IdentifiedObject.aliasName>DCLS2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>DCLS_99981</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>DCLineSegment2</cim:IdentifiedObject.name>
+	</cim:DCLineSegment>
+
+	<cim:ACLineSegment rdf:ID="124903727_ACLS">
+		<cim:ACLineSegment.b0ch>54</cim:ACLineSegment.b0ch>
+		<cim:ACLineSegment.bch>1</cim:ACLineSegment.bch>
+		<cim:ACLineSegment.g0ch>43</cim:ACLineSegment.g0ch>
+		<cim:ACLineSegment.gch>5</cim:ACLineSegment.gch>
+		<cim:ACLineSegment.r>66</cim:ACLineSegment.r>
+		<cim:ACLineSegment.r0>5</cim:ACLineSegment.r0>
+		<cim:ACLineSegment.x>4</cim:ACLineSegment.x>
+		<cim:ACLineSegment.x0>2</cim:ACLineSegment.x0>
+		<cim:Conductor.length>35</cim:Conductor.length>
+		<cim:IdentifiedObject.aliasName>ACLS1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>ACLS_11111</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ACLineSegment1</cim:IdentifiedObject.name>
+	</cim:ACLineSegment>
+	<cim:ACLineSegment rdf:ID="939140759_ACLS">
+		<cim:ACLineSegment.b0ch>5.4</cim:ACLineSegment.b0ch>
+		<cim:ACLineSegment.bch>2</cim:ACLineSegment.bch>
+		<cim:ACLineSegment.g0ch>4.3</cim:ACLineSegment.g0ch>
+		<cim:ACLineSegment.gch>5</cim:ACLineSegment.gch>
+		<cim:ACLineSegment.r>6.6</cim:ACLineSegment.r>
+		<cim:ACLineSegment.r0>2</cim:ACLineSegment.r0>
+		<cim:ACLineSegment.x>1</cim:ACLineSegment.x>
+		<cim:ACLineSegment.x0>2.7</cim:ACLineSegment.x0>
+		<cim:Conductor.length>22</cim:Conductor.length>
+		<cim:IdentifiedObject.aliasName>ACLS2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>ACLS_22222</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ACLineSegment2</cim:IdentifiedObject.name>
+	</cim:ACLineSegment>
+
+	<cim:ConnectivityNodeContainer rdf:ID="487949163_CND">
+		<cim:IdentifiedObject.aliasName>CND1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>CND_84916</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ConnectivityNodeContainer1</cim:IdentifiedObject.name>
+	</cim:ConnectivityNodeContainer>
+    <cim:ConnectivityNodeContainer rdf:ID="4165189641_CND">
+		<cim:IdentifiedObject.aliasName>CND2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>CND_14758</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ConnectivityNodeContainer2</cim:IdentifiedObject.name>
+	</cim:ConnectivityNodeContainer>
+
+	<cim:ConnectivityNode rdf:ID="599593448_CN">
+		<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#487949163_CND"/>
+		<cim:ConnectivityNode.description>Some random description for connectivity node</cim:ConnectivityNode.description>
+		<cim:IdentifiedObject.aliasName>CN1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>CN_44321</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ConnectiviyNode1</cim:IdentifiedObject.name>
+	</cim:ConnectivityNode>
+    <cim:ConnectivityNode rdf:ID="1250788534_CN">
+		<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#4165189641_CND"/>
+		<cim:ConnectivityNode.description>Another random description for connectivity node</cim:ConnectivityNode.description>
+		<cim:IdentifiedObject.aliasName>CN2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>CN_44322</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ConnectiviyNode2</cim:IdentifiedObject.name>
+	</cim:ConnectivityNode>
+
+	<cim:Terminal rdf:ID="599593624_TER">
+		<cim:Terminal.ConductingEquipment rdf:resource="#124903727_ACLS"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#599593448_CN"/>
+		<cim:IdentifiedObject.aliasName>TER1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TER_77881</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Terminal1</cim:IdentifiedObject.name>
+	</cim:Terminal>
+        <cim:Terminal rdf:ID="124903727_TER">
+		<cim:Terminal.ConductingEquipment rdf:resource="#124903727_ACLS"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#1250788534_CN"/>
+		<cim:IdentifiedObject.aliasName>TER2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TER_77882</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Terminal2</cim:IdentifiedObject.name>
+	</cim:Terminal>
+	<cim:Terminal rdf:ID="939140719_TER">
+		<cim:Terminal.ConductingEquipment rdf:resource="#939140759_SC"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#1250788534_CN"/>
+		<cim:IdentifiedObject.aliasName>TER3</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TER_77883</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Terminal3</cim:IdentifiedObject.name>
+	</cim:Terminal>
