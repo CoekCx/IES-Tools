@@ -1,6 +1,8 @@
 from inquirer2 import prompt
 
+from data_reader.reader import DataReader
 from stock_analizer.analizer import Analyzer
+from code_generator.generator import Generator
 
 
 def main():
@@ -8,7 +10,7 @@ def main():
         {
             'type': 'list',
             'name': 'menu_choice',
-            'message': 'Select an option:',
+            'message': 'Select tool to use:',
             'choices': [
                 'Stock Analyzer',
                 'Code Generator',
@@ -23,7 +25,7 @@ def main():
     if choice == 'Stock Analyzer':
         Analyzer.start_app()
     elif choice == 'Code Generator':
-        pass
+        Generator.start_app()
 
 
 if __name__ == '__main__':

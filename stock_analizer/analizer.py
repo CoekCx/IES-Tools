@@ -1,15 +1,12 @@
 import os
 
 from PIL import Image
-from prompt_toolkit import prompt
-from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.shortcuts import CompleteStyle
-from prompt_toolkit.styles import Style
 from tabulate import tabulate
 from termcolor import colored
 
 from constants.constants import IES_FOLDER_PATH
 from data_reader.reader import DataReader
+from prompter.prompter import Prompter
 
 
 class Analyzer:
@@ -17,36 +14,11 @@ class Analyzer:
     def start_app() -> None:
         # fetch data
         data = DataReader.fetch_all_data()
-        classes = DataReader.fetch_classes()
 
-        selected_classes = Analyzer.__prompt_for_classes(classes)  # take user input
+        selected_classes = Prompter.prompt_user_for_classes()  # take user input
         sorted_data = Analyzer.__sort_data_by_overlap(data, selected_classes)  # analize data based on user input
 
         Analyzer.__await_user_input(sorted_data, selected_classes)
-
-    @staticmethod
-    def __prompt_for_classes(classes):
-        completer = WordCompleter(classes, ignore_case=True, match_middle=True)
-
-        # Define styles
-        style = Style.from_dict({
-            'prompt': 'bg:#66ff66 #ffffff',
-            'input': '#44ff44',
-            'placeholder': '#888888',
-        })
-
-        # Prompt text with a green background
-        prompt_text = [
-            ('class:prompt', 'Enter classes (separated by space): '),
-            ('class:input', ''),
-        ]
-
-        input_str = prompt(prompt_text, style=style, completer=completer, complete_style=CompleteStyle.COLUMN)
-
-        # Split the input string into a list of classes
-        user_classes = input_str.split()
-
-        return user_classes
 
     @staticmethod
     def __sort_data_by_overlap(loaded_data: dict, target_classes: list) -> dict:

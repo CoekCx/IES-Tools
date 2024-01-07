@@ -1,129 +1,161 @@
 <Path>Projekat - Andjela</Path>
 
-<!-- Process -->
-	<cim:Process rdf:ID="P1">
-		<cim:Process.classificationType>official</cim:Process.classificationType>
-		<cim:Process.processType>first</cim:Process.processType>
-		<cim:IdentifiedObject.aliasName>Procescic1</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>P1</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Process1</cim:IdentifiedObject.name>
-	</cim:Process>
-	<cim:Process rdf:ID="P2">
-		<cim:Process.classificationType>unofficial</cim:Process.classificationType>
-		<cim:Process.processType>first</cim:Process.processType>
-		<cim:IdentifiedObject.aliasName>Procescic2</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>P2</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Process2</cim:IdentifiedObject.name>
-	</cim:Process>
-
-<!-- MarketDocument -->
-	<cim:MarketDocument rdf:ID="MD1">
-		<cim:MarketDocument.Process rdf:resource="#P1"/>
-		<cim:Document.createdDateTime>2022-01-01T12:00:00</cim:Document.createdDateTime>
-		<cim:Document.lastModifiedDateTime>2022-03-01T12:00:00</cim:Document.lastModifiedDateTime>
-		<cim:Document.revisionNumber>1</cim:Document.revisionNumber>
-		<cim:Document.subject>subject1</cim:Document.subject>
-		<cim:Document.title>title1</cim:Document.title>
-		<cim:Document.type>type1</cim:Document.type>
-		<cim:IdentifiedObject.aliasName>TrzisniDokumentic1</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>MD1</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>MarketDocument1</cim:IdentifiedObject.name>
-	</cim:MarketDocument>
-	<cim:MarketDocument rdf:ID="MD2">
-		<cim:MarketDocument.Process rdf:resource="#P2"/>
-		<cim:Document.createdDateTime>2022-02-02T12:00:00</cim:Document.createdDateTime>
-		<cim:Document.lastModifiedDateTime>2022-03-02T12:00:00</cim:Document.lastModifiedDateTime>
-		<cim:Document.revisionNumber>2</cim:Document.revisionNumber>
-		<cim:Document.subject>subject2</cim:Document.subject>
-		<cim:Document.title>title2</cim:Document.title>
-		<cim:Document.type>type2</cim:Document.type>
-		<cim:IdentifiedObject.aliasName>TrzisniDokumentic2</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>MD2</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>MarketDocument2</cim:IdentifiedObject.name>
-	</cim:MarketDocument>
-
-<!-- Period -->
-	<cim:Period rdf:ID="PE1">
-		<cim:Period.MarketDocument rdf:resource="#MD1"/>
-		<cim:IdentifiedObject.aliasName>Intervalic1</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>PE1</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Period1</cim:IdentifiedObject.name>
-	</cim:Period>
-	<cim:Period rdf:ID="PE2">
-		<cim:Period.MarketDocument rdf:resource="#MD2"/>
-		<cim:IdentifiedObject.aliasName>Intervalic2</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>PE2</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Period2</cim:IdentifiedObject.name>
-	</cim:Period>
-
-<!-- Point -->
-	<cim:Point rdf:ID="PO1">
-		<cim:Point.Period rdf:resource="#PE1"/>
-		<cim:Point.position>5</cim:Point.position>
-		<cim:IdentifiedObject.aliasName>Tackica1</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>PO1</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Point1</cim:IdentifiedObject.name>
-	</cim:Point>
-	<cim:Point rdf:ID="PO2">
-		<cim:Point.Period rdf:resource="#PE2"/>
-		<cim:Point.position>3</cim:Point.position>
-		<cim:IdentifiedObject.aliasName>Tackica2</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>PO2</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Point2</cim:IdentifiedObject.name>
-	</cim:Point>
-
-<!-- TimeSeries -->
-	<cim:TimeSeries rdf:ID="TS1">
-		<cim:TimeSeries.MarketDocument rdf:resource="#MD1"/>
-		<cim:TimeSeries.objectAggregation>low</cim:TimeSeries.objectAggregation>
-		<cim:TimeSeries.Period rdf:resource="#PE1"/>
-		<cim:TimeSeries.product>milk</cim:TimeSeries.product>
-		<cim:TimeSeries.version>1.0</cim:TimeSeries.version>
-		<cim:IdentifiedObject.aliasName>VremenskaSerijica1</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>TS1</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>TimeSeries1</cim:IdentifiedObject.name>
-	</cim:TimeSeries>
-	<cim:TimeSeries rdf:ID="TS2">
-		<cim:TimeSeries.MarketDocument rdf:resource="#MD2"/>
-		<cim:TimeSeries.objectAggregation>mid</cim:TimeSeries.objectAggregation>
-		<cim:TimeSeries.Period rdf:resource="#PE2"/>
-		<cim:TimeSeries.product>cheese</cim:TimeSeries.product>
-		<cim:TimeSeries.version>2.0</cim:TimeSeries.version>
-		<cim:IdentifiedObject.aliasName>VremenskaSerijica2</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>TS2</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>TimeSeries2</cim:IdentifiedObject.name>
-	</cim:TimeSeries>
-	<cim:TimeSeries rdf:ID="TS3">
-		<cim:TimeSeries.MarketDocument rdf:resource="#MD1"/>
-		<cim:TimeSeries.objectAggregation>low</cim:TimeSeries.objectAggregation>
-		<cim:TimeSeries.Period rdf:resource="#PE2"/>
-		<cim:TimeSeries.product>chocolate</cim:TimeSeries.product>
-		<cim:TimeSeries.version>1.4</cim:TimeSeries.version>
-		<cim:IdentifiedObject.aliasName>VremenskaSerijica3</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>TS3</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>TimeSeries3</cim:IdentifiedObject.name>
-	</cim:TimeSeries>
-	<cim:TimeSeries rdf:ID="TS4">
-		<cim:TimeSeries.MarketDocument rdf:resource="#MD2"/>
-		<cim:TimeSeries.objectAggregation>hich</cim:TimeSeries.objectAggregation>
-		<cim:TimeSeries.Period rdf:resource="#PE1"/>
-		<cim:TimeSeries.product>apple</cim:TimeSeries.product>
-		<cim:TimeSeries.version>2.3</cim:TimeSeries.version>
-		<cim:IdentifiedObject.aliasName>VremenskaSerijica4</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>TS4</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>TimeSeries4</cim:IdentifiedObject.name>
-	</cim:TimeSeries>
-
-<!-- MeasurementPoint -->
-	<cim:MeasurementPoint rdf:ID="MP1">
-		<cim:MeasurementPoint.TimeSeries rdf:resource="#TS1"/>
-		<cim:IdentifiedObject.aliasName>MernaTackica1</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>MP1</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>MeasurementPoint1</cim:IdentifiedObject.name>
-	</cim:MeasurementPoint>
-	<cim:MeasurementPoint rdf:ID="MP2">
-		<cim:MeasurementPoint.TimeSeries rdf:resource="#TS2"/>
-		<cim:IdentifiedObject.aliasName>MernaTackica2</cim:IdentifiedObject.aliasName>
-		<cim:IdentifiedObject.mRID>MP2</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>MeasurementPoint2</cim:IdentifiedObject.name>
-	</cim:MeasurementPoint>
+	<cim:ConnectivityNode rdf:ID="599593448_CN">
+		<cim:ConnectivityNode.description>Some random description for connectivity node</cim:ConnectivityNode.description>
+		<cim:IdentifiedObject.aliasName>CN1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>CN_44321</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ConnectiviyNode1</cim:IdentifiedObject.name>
+	</cim:ConnectivityNode>
+        <cim:ConnectivityNode rdf:ID="1250788534_CN">
+		<cim:ConnectivityNode.description>Another random description for connectivity node</cim:ConnectivityNode.description>
+		<cim:IdentifiedObject.aliasName>CN2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>CN_44322</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ConnectiviyNode2</cim:IdentifiedObject.name>
+	</cim:ConnectivityNode>
+	<cim:ConnectivityNode rdf:ID="1272157892_CN">
+		<cim:ConnectivityNode.description>Not used</cim:ConnectivityNode.description>
+		<cim:IdentifiedObject.aliasName>CN3</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>CN_14634</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ConnectiviyNode3</cim:IdentifiedObject.name>
+	</cim:ConnectivityNode>
+	<cim:PerLengthSequenceImpedance rdf:ID="1250788534_PLSI">
+		<cim:PerLengthSequenceImpedance.b0ch>1</cim:PerLengthSequenceImpedance.b0ch>
+		<cim:PerLengthSequenceImpedance.bch>2</cim:PerLengthSequenceImpedance.bch>
+		<cim:PerLengthSequenceImpedance.g0ch>3</cim:PerLengthSequenceImpedance.g0ch>
+		<cim:PerLengthSequenceImpedance.gch>4</cim:PerLengthSequenceImpedance.gch>
+		<cim:PerLengthSequenceImpedance.r>5</cim:PerLengthSequenceImpedance.r>
+		<cim:PerLengthSequenceImpedance.r0>6</cim:PerLengthSequenceImpedance.r0>
+		<cim:PerLengthSequenceImpedance.x>7</cim:PerLengthSequenceImpedance.x>
+		<cim:PerLengthSequenceImpedance.x0>8</cim:PerLengthSequenceImpedance.x0>
+		<cim:IdentifiedObject.aliasName>PLSI1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PLSI_55533</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>PerLengthSeqImp1</cim:IdentifiedObject.name>
+	</cim:PerLengthSequenceImpedance>
+	<cim:PerLengthSequenceImpedance rdf:ID="1272157892_PLSI">
+		<cim:PerLengthSequenceImpedance.b0ch>2.3</cim:PerLengthSequenceImpedance.b0ch>
+		<cim:PerLengthSequenceImpedance.bch>1.2</cim:PerLengthSequenceImpedance.bch>
+		<cim:PerLengthSequenceImpedance.g0ch>1.3</cim:PerLengthSequenceImpedance.g0ch>
+		<cim:PerLengthSequenceImpedance.gch>0.4</cim:PerLengthSequenceImpedance.gch>
+		<cim:PerLengthSequenceImpedance.r>5.3</cim:PerLengthSequenceImpedance.r>
+		<cim:PerLengthSequenceImpedance.r0>6</cim:PerLengthSequenceImpedance.r0>
+		<cim:PerLengthSequenceImpedance.x>0.7</cim:PerLengthSequenceImpedance.x>
+		<cim:PerLengthSequenceImpedance.x0>1.8</cim:PerLengthSequenceImpedance.x0>
+		<cim:IdentifiedObject.aliasName>PLSI2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>PLSI_55312</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>PerLengthSeqImp2</cim:IdentifiedObject.name>
+	</cim:PerLengthSequenceImpedance>
+	<cim:SeriesCompensator rdf:ID="124903727_SC">
+		<cim:SeriesCompensator.r>12</cim:SeriesCompensator.r>
+		<cim:SeriesCompensator.r0>13</cim:SeriesCompensator.r0>
+		<cim:SeriesCompensator.x>14</cim:SeriesCompensator.x>
+		<cim:SeriesCompensator.x0>15</cim:SeriesCompensator.x0>
+		<cim:Equipment.aggregate>False</cim:Equipment.aggregate>
+		<cim:Equipment.normallyInService>False</cim:Equipment.normallyInService>
+		<cim:IdentifiedObject.aliasName>COMP1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>COMP_45678</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Compensator1</cim:IdentifiedObject.name>
+	</cim:SeriesCompensator>
+        <cim:SeriesCompensator rdf:ID="939140759_SC">
+		<cim:SeriesCompensator.r>2</cim:SeriesCompensator.r>
+		<cim:SeriesCompensator.r0>1</cim:SeriesCompensator.r0>
+		<cim:SeriesCompensator.x>4</cim:SeriesCompensator.x>
+		<cim:SeriesCompensator.x0>1.5</cim:SeriesCompensator.x0>
+		<cim:Equipment.aggregate>True</cim:Equipment.aggregate>
+		<cim:Equipment.normallyInService>False</cim:Equipment.normallyInService>
+		<cim:IdentifiedObject.aliasName>COMP2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>COMP_11671</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Compensator2</cim:IdentifiedObject.name>
+	</cim:SeriesCompensator>
+	<cim:DCLineSegment rdf:ID="939140759_DCLS">
+		<cim:DCLineSegment.dcSegmentInductance>3.4</cim:DCLineSegment.dcSegmentInductance>
+		<cim:DCLineSegment.dcSegmentResistance>4.2</cim:DCLineSegment.dcSegmentResistance>
+		<cim:Conductor.length>44</cim:Conductor.length>
+		<cim:Equipment.aggregate>True</cim:Equipment.aggregate>
+		<cim:Equipment.normallyInService>False</cim:Equipment.normallyInService>
+		<cim:IdentifiedObject.aliasName>DCLS1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>DCLS_99988</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>DCLineSegment1</cim:IdentifiedObject.name>
+	</cim:DCLineSegment>
+	<cim:DCLineSegment rdf:ID="124903727_DCLS">
+		<cim:DCLineSegment.dcSegmentInductance>11</cim:DCLineSegment.dcSegmentInductance>
+		<cim:DCLineSegment.dcSegmentResistance>34</cim:DCLineSegment.dcSegmentResistance>
+		<cim:Conductor.length>54</cim:Conductor.length>
+		<cim:Equipment.aggregate>False</cim:Equipment.aggregate>
+		<cim:Equipment.normallyInService>False</cim:Equipment.normallyInService>
+		<cim:IdentifiedObject.aliasName>DCLS2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>DCLS_99981</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>DCLineSegment2</cim:IdentifiedObject.name>
+	</cim:DCLineSegment>
+	<cim:ACLineSegment rdf:ID="124903727_ACLS">
+		<cim:ACLineSegment.b0ch>54</cim:ACLineSegment.b0ch>
+		<cim:ACLineSegment.bch>1</cim:ACLineSegment.bch>
+		<cim:ACLineSegment.g0ch>43</cim:ACLineSegment.g0ch>
+		<cim:ACLineSegment.gch>5</cim:ACLineSegment.gch>
+		<cim:ACLineSegment.PerLengthImpedance rdf:resource="#1250788534_PLSI"/>
+		<cim:ACLineSegment.r>66</cim:ACLineSegment.r>
+		<cim:ACLineSegment.r0>5</cim:ACLineSegment.r0>
+		<cim:ACLineSegment.x>4</cim:ACLineSegment.x>
+		<cim:ACLineSegment.x0>2</cim:ACLineSegment.x0>
+		<cim:Conductor.length>35</cim:Conductor.length>
+		<cim:Equipment.aggregate>True</cim:Equipment.aggregate>
+		<cim:Equipment.normallyInService>True</cim:Equipment.normallyInService>
+		<cim:IdentifiedObject.aliasName>ACLS1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>ACLS_11111</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ACLineSegment1</cim:IdentifiedObject.name>
+	</cim:ACLineSegment>
+	<cim:ACLineSegment rdf:ID="939140759_ACLS">
+		<cim:ACLineSegment.b0ch>5.4</cim:ACLineSegment.b0ch>
+		<cim:ACLineSegment.bch>2</cim:ACLineSegment.bch>
+		<cim:ACLineSegment.g0ch>4.3</cim:ACLineSegment.g0ch>
+		<cim:ACLineSegment.gch>5</cim:ACLineSegment.gch>
+		<cim:ACLineSegment.PerLengthImpedance rdf:resource="#1250788534_PLSI"/>
+		<cim:ACLineSegment.r>6.6</cim:ACLineSegment.r>
+		<cim:ACLineSegment.r0>2</cim:ACLineSegment.r0>
+		<cim:ACLineSegment.x>1</cim:ACLineSegment.x>
+		<cim:ACLineSegment.x0>2.7</cim:ACLineSegment.x0>
+		<cim:Conductor.length>22</cim:Conductor.length>
+		<cim:Equipment.aggregate>False</cim:Equipment.aggregate>
+		<cim:Equipment.normallyInService>True</cim:Equipment.normallyInService>
+		<cim:IdentifiedObject.aliasName>ACLS2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>ACLS_22222</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>ACLineSegment2</cim:IdentifiedObject.name>
+	</cim:ACLineSegment>
+	<cim:Terminal rdf:ID="599593624_TER">
+		<cim:Terminal.ConductingEquipment rdf:resource="#124903727_ACLS"/>
+		<cim:Terminal.connected>True</cim:Terminal.connected>
+		<cim:Terminal.ConnectivityNode rdf:resource="#599593448_CN"/>
+		<cim:Terminal.phases>ABC</cim:Terminal.phases>
+		<cim:Terminal.sequenceNumber>1</cim:Terminal.sequenceNumber>
+		<cim:IdentifiedObject.aliasName>TER1</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TER_77880</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Terminal</cim:IdentifiedObject.name>
+	</cim:Terminal>
+        <cim:Terminal rdf:ID="124903727_TER">
+		<cim:Terminal.ConductingEquipment rdf:resource="#124903727_ACLS"/>
+		<cim:Terminal.connected>False</cim:Terminal.connected>
+		<cim:Terminal.ConnectivityNode rdf:resource="#1250788534_CN"/>
+		<cim:Terminal.phases>AC</cim:Terminal.phases>
+		<cim:Terminal.sequenceNumber>342</cim:Terminal.sequenceNumber>
+		<cim:IdentifiedObject.aliasName>TER2</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TER_77882</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Terminal2</cim:IdentifiedObject.name>
+	</cim:Terminal>
+	<cim:Terminal rdf:ID="939140759_TER">
+		<cim:Terminal.ConductingEquipment rdf:resource="#939140759_DCLS"/>
+		<cim:Terminal.connected>False</cim:Terminal.connected>
+		<cim:Terminal.phases>A</cim:Terminal.phases>
+		<cim:Terminal.sequenceNumber>11</cim:Terminal.sequenceNumber>
+		<cim:IdentifiedObject.aliasName>TER3</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TER_77883</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Terminal3</cim:IdentifiedObject.name>
+	</cim:Terminal>
+	<cim:Terminal rdf:ID="939140719_TER">
+		<cim:Terminal.ConductingEquipment rdf:resource="#939140759_SC"/>
+		<cim:Terminal.connected>True</cim:Terminal.connected>
+		<cim:Terminal.ConnectivityNode rdf:resource="#1250788534_CN"/>
+		<cim:Terminal.phases>C</cim:Terminal.phases>
+		<cim:Terminal.sequenceNumber>15</cim:Terminal.sequenceNumber>
+		<cim:IdentifiedObject.aliasName>TER4</cim:IdentifiedObject.aliasName>
+		<cim:IdentifiedObject.mRID>TER_77884</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Terminal4</cim:IdentifiedObject.name>
+	</cim:Terminal>
