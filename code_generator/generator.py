@@ -1,20 +1,32 @@
 import os
 
-from PIL import Image
-from prompt_toolkit import prompt
-from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.shortcuts import CompleteStyle
-from prompt_toolkit.styles import Style
-from tabulate import tabulate
-from termcolor import colored
+from inquirer2 import prompt as pmt
 
-from constants.constants import IES_FOLDER_PATH
-from data_reader.reader import DataReader
+from prompter.prompter import Prompter
 
 
 class Generator:
+    project_specification = {}
+
     @staticmethod
     def start_app() -> None:
+        # Ask the user if they want to enter project specifications
+        specification_question = [
+            {
+                'type': 'confirm',
+                'name': 'enter_specifications',
+                'message': 'Do you want to enter project specifications?',
+                'default': True,
+            }
+        ]
+
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        specification_answer = pmt.prompt(specification_question)
+
+        if specification_answer['enter_specifications']:
+            # If the user wants to enter specifications, call the method
+            Generator.__get_project_specifications()
+
         questions = [
             {
                 'type': 'list',
@@ -28,10 +40,23 @@ class Generator:
             },
         ]
 
-        answers = prompt.prompt(questions)
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        answers = pmt.prompt(questions)
 
         choice = answers['menu_choice']
 
     @staticmethod
     def __get_project_specifications() -> None:
+        Generator.project_specification = Prompter.prompt_user_for_project_specification()
+
+    @staticmethod
+    def __generate_model_codes() -> None:
+        pass
+
+    @staticmethod
+    def __generate_converter_methods() -> None:
+        pass
+
+    @staticmethod
+    def __generate_importer_methods() -> None:
         pass

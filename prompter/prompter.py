@@ -1,9 +1,14 @@
+import os
+import sys
+
+from inquirer2 import prompt as pmt
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.shortcuts import CompleteStyle
 from prompt_toolkit.styles import Style
+from tqdm import tqdm
 
-from data_reader.reader import DataReader
+import models.models as data
 
 
 class Prompter:
@@ -16,7 +21,7 @@ class Prompter:
     @staticmethod
     def prompt_user_for_classes(classes=None):
         if not classes:
-            classes = DataReader.fetch_classes()
+            classes = data.classes
 
         completer = WordCompleter(classes, ignore_case=True, match_middle=True)
 
@@ -35,22 +40,37 @@ class Prompter:
         return user_classes
 
     @staticmethod
-    def prompt_user_for_project_specification(classes=None):
-        if not classes:
-            classes = DataReader.fetch_classes()
+    def prompt_user_for_project_specification():
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        classes = Prompter.prompt_user_for_classes()
 
-        completer = WordCompleter(classes, ignore_case=True, match_middle=True)
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        print("\033[1;1H")
 
-        # Prompt text with a green background
-        prompt_text = [
-            ('class:prompt', 'Enter classes (separated by space): '),
-            ('class:input', ''),
-        ]
+        result = {}
 
-        input_str = prompt(prompt_text, style=Prompter.__style, completer=completer,
-                           complete_style=CompleteStyle.COLUMN)
+        for user_class in tqdm(classes, desc='Processing', unit='class', file=sys.stdout):
+            # Get properties excluding 'inheritance' and 'type'
+            properties = [(attr, data_type) for attr, data_type in data.models[user_class] if
+                          data_type not in ['inheritance', 'type']]
 
-        # Split the input string into a list of classes
-        user_classes = input_str.split()
+            # Prepare questions for checkbox prompt
+            questions = [
+                {
+                    'type': 'checkbox',
+                    'name': 'selected_properties',
+                    'message': f'Select properties for {user_class}',
+                    'choices': [{'name': f'{attr} ({data_type})'} for attr, data_type in properties]
+                }
+            ]
 
-        return user_classes
+            # Prompt user for property selection
+            answers = pmt.prompt(questions)
+
+            # Save selected properties in the result
+            result[user_class] = [(attr, data_type) for selected_property in answers['selected_properties'] for
+                                  attr, data_type in properties if selected_property.startswith(attr)]
+            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            print("\033[1;1H")
+
+        return result
