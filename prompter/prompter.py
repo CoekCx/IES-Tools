@@ -64,12 +64,19 @@ class Prompter:
                 }
             ]
 
-            # Prompt user for property selection
-            answers = pmt.prompt(questions)
+            if properties:
+                # Prompt user for property selection
+                answers = pmt.prompt(questions)
 
-            # Save selected properties in the result
-            result[user_class] = [(attr, data_type) for selected_property in answers['selected_properties'] for
-                                  attr, data_type in properties if selected_property.startswith(attr)]
+                # Save selected properties in the result
+                result[user_class] = [(attr, data_type) for selected_property in answers['selected_properties'] for
+                                      attr, data_type in properties if selected_property.startswith(attr)]
+            for attr, data_type in data.models[user_class]:
+                if data_type in ['inheritance', 'type']:
+                    if user_class in result:
+                        result[user_class].insert(0, (attr, data_type))
+                    else:
+                        result[user_class] = [(attr, data_type)]
             os.system('cls' if os.name in ('nt', 'dos') else 'clear')
             print("\033[1;1H")
 

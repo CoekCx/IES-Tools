@@ -2,6 +2,7 @@ models = {
     'IdentifiedObject': [
         ('abstract', 'type'),
         ('', 'inheritance'),
+        ('gid', 'long'),
         ('mRID', 'string'),
         ('aliasName', 'string'),
         ('name', 'string')
@@ -97,12 +98,14 @@ models = {
         ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('SeasonDayTypeSchedules', 'reflist'),
+        ('startData', 'datetime'),
+        ('endData', 'datetime'),
     ],
     'RecloseSequence': [
         ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('ProtectedSwitch', 'ref'),
-        ('recloseDelay', 'int'),
+        ('recloseDelay', 'float'),
         ('recloseStep', 'int'),
     ],
     'Terminal': [
@@ -192,7 +195,7 @@ models = {
         ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('MarketDocument', 'ref'),
-        ('Periods', 'reflist'),
+        ('Points', 'reflist'),
         ('TimeSeriess', 'reflist'),
         ('duration', 'float'),
     ],
@@ -209,7 +212,7 @@ models = {
     'MarketDocument': [
         ('concrete', 'type'),
         ('Document', 'inheritance'),
-        ('Period', 'ref'),
+        ('Period', 'reflist'),
         ('Process', 'ref'),
         ('TimeSeriess', 'reflist'),
     ],
@@ -228,6 +231,8 @@ models = {
     'TimeSeries': [
         ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
+        ('MarketDocument', 'ref'),
+        ('Period', 'ref'),
         ('MeasurementPoints', 'reflist'),
         ('objectAggregation', 'string'),
         ('product', 'string'),
