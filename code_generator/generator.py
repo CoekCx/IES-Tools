@@ -167,13 +167,14 @@ class Generator:
             model_codes.append(class_model_code)
             model_codes_code_body += f'\n\t\t{class_model_code.__str__()},' if class_name == 'IdentifiedObject' else f'\n\n\t\t{class_model_code.__str__()},'
 
-            property_serial_number = 1
+            property_serial_number = 0
             attribute_index = lambda: hex(property_serial_number)[-2:].replace("x", "0")
             for property_name, property_type in properties:
                 # Skip 'inheritance' and 'type' properties
                 if property_type in ['inheritance', 'type']:
                     continue
 
+                property_serial_number += 1
                 property_model_code = ModelCode(class_name, class_inheritances[class_name], dms_type, attribute_index(),
                                                 Generator.__type_mapping.get(property_type, '0a'), property_name)
                 model_codes.append(property_model_code)
