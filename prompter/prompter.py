@@ -1,6 +1,7 @@
 import os
 import sys
 
+import inquirer as inq
 from inquirer2 import prompt as pmt
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
@@ -81,3 +82,10 @@ class Prompter:
             print("\033[1;1H")
 
         return result
+
+    @staticmethod
+    def prompt_numeric_question(title='', message=''):
+        questions = [
+            inq.Text(title, message=message,
+                     validate=lambda _, x: int(x) > 0)]
+        return inq.prompt(questions)

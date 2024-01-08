@@ -63,7 +63,7 @@ models = {
         ('value2Unit', 'UnitSymbol'),
     ],
     'RegularIntervalSchedule': [
-        ('abstract', 'type'),
+        ('concrete', 'type'),
         ('BasicIntervalSchedule', 'inheritance'),
         ('RegularTimePoints', 'reflist'),
         ('endTime', 'datetime'),

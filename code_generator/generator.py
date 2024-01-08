@@ -1,8 +1,11 @@
 import os
+from random import randint
 
 import pyperclip
 from inquirer2 import prompt as pmt
 
+from constants.templates import XML_FILE_TEMPLATE
+from models.concrete_class_data_point import ConcreteClassDataPoint
 from models.dms_type import DMSType
 from models.model_code import ModelCode
 from prompter.prompter import Prompter
@@ -59,6 +62,7 @@ class Generator:
                     'choices': [
                         'Set Project Specification',
                         'Generate Model Defines',
+                        'Generate XML data',
                         'Generate Converter Methods',
                         'Generate Importer Methods',
                     ],
@@ -72,6 +76,11 @@ class Generator:
 
             if choice == 'Set Project Specification':
                 Generator.__get_project_specifications()
+            elif choice == 'Generate XML data':
+                Generator.concrete_classes = {class_name: class_attribues for class_name, class_attribues in
+                                              Generator.project_specification.items() if
+                                              class_attribues[1][0] == 'concrete'}
+                Generator.__generate_xml_data()
             elif choice == 'Generate Model Defines':
                 Generator.__generate_model_defines()
                 pyperclip.copy(Generator.__model_defines_code)
@@ -85,6 +94,8 @@ class Generator:
     @staticmethod
     def __get_project_specifications() -> None:
         Generator.project_specification = Prompter.prompt_user_for_project_specification()
+        Generator.concrete_classes = {class_name: class_attribues for class_name, class_attribues in
+                                      Generator.project_specification.items() if class_attribues[1][0] == 'concrete'}
 
     @staticmethod
     def __generate_class_inheritance_values():
@@ -184,6 +195,23 @@ class Generator:
         Generator.__model_codes_code = model_codes_code
         Generator.__model_defines_code = f'{Generator.__dms_types_code}\n\n{Generator.__model_codes_code}'
         return model_codes
+
+    @staticmethod
+    def __generate_xml_data() -> None:
+        data_points_count = int(
+            Prompter.prompt_numeric_question('Concrete data generation', 'How many data points do you want per class')[
+                'Concrete data generation'])
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        xml_code = XML_FILE_TEMPLATE
+        xml_data_code = ''
+        for class_name, class_attr in Generator.concrete_classes.items():
+            xml_data_code += f'\n\n\t<!-- {class_name} -->'
+            for data_point in range(data_points_count):
+                concrete_data_point = ConcreteClassDataPoint(randint(10 ** 9, (10 ** 10) - 1), class_name)
+                xml_data_code += concrete_data_point.code
+        xml_code = xml_code.replace('{{data}}', xml_data_code)
+        print(xml_code)
+        input()
 
     @staticmethod
     def __generate_converter_methods() -> None:
