@@ -1,4 +1,4 @@
-from constants.templates import DATA_POINT_TEMPLATE
+from common.constants.templates import DATA_POINT_TEMPLATE
 
 
 class ConcreteClassDataPoint:

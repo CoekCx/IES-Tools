@@ -4,7 +4,7 @@ from PIL import Image
 from tabulate import tabulate
 from termcolor import colored
 
-from constants.constants import IES_FOLDER_PATH
+from common.constants.constants import IES_FOLDER_PATH
 from data_reader.reader import DataReader
 from prompter.prompter import Prompter
 

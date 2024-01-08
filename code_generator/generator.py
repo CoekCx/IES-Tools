@@ -1,13 +1,17 @@
 import os
-from random import randint
+import string
+from datetime import datetime, timedelta
+from random import randint, uniform, choice, sample
 
 import pyperclip
 from inquirer2 import prompt as pmt
 
-from constants.templates import XML_FILE_TEMPLATE
-from models.concrete_class_data_point import ConcreteClassDataPoint
-from models.dms_type import DMSType
-from models.model_code import ModelCode
+from common.constants.templates import XML_FILE_TEMPLATE
+from common.enums.enums import enums
+from common.models.concrete_class_data_point import ConcreteClassDataPoint
+from common.models.dms_type import DMSType
+from common.models.model_code import ModelCode
+from common.models.models import transform_properties
 from prompter.prompter import Prompter
 
 
@@ -26,9 +30,14 @@ class Generator:
         'reflist': '19',
         'enum': '0a'
     }
+    __reference_property_names_map = {
+        'RegularTimePoint_IntervalSchedule': 'RegularIntervalSchedule',
+        'IrregularTimePoint_IntervalSchedule': 'IrregularIntervalSchedule',
+    }
     __dms_types_code = ''
     __model_codes_code = ''
     __model_defines_code = ''
+    __xml_data_code = ''
 
     @staticmethod
     def start_app() -> None:
@@ -77,10 +86,10 @@ class Generator:
             if choice == 'Set Project Specification':
                 Generator.__get_project_specifications()
             elif choice == 'Generate XML data':
-                Generator.concrete_classes = {class_name: class_attribues for class_name, class_attribues in
-                                              Generator.project_specification.items() if
-                                              class_attribues[1][0] == 'concrete'}
                 Generator.__generate_xml_data()
+                pyperclip.copy(Generator.__xml_data_code)
+                print(Generator.__xml_data_code)
+                input()
             elif choice == 'Generate Model Defines':
                 Generator.__generate_model_defines()
                 pyperclip.copy(Generator.__model_defines_code)
@@ -94,8 +103,13 @@ class Generator:
     @staticmethod
     def __get_project_specifications() -> None:
         Generator.project_specification = Prompter.prompt_user_for_project_specification()
-        Generator.concrete_classes = {class_name: class_attribues for class_name, class_attribues in
-                                      Generator.project_specification.items() if class_attribues[1][0] == 'concrete'}
+        Generator.transformed_project_specification = transform_properties(Generator.project_specification)
+        concrete_classes = {class_name: class_attribues for class_name, class_attribues in
+                            Generator.project_specification.items() if
+                            class_attribues[1][0] == 'concrete'}
+        Generator.transformed_concrete_classes = transform_properties(concrete_classes)
+
+    # <editor-fold desc="MODEL DEFINES GENERATION">
 
     @staticmethod
     def __generate_class_inheritance_values():
@@ -161,7 +175,7 @@ class Generator:
         return dms_types
 
     @staticmethod
-    def __generate_model_defines() -> list:
+    def __generate_model_defines() -> None:
         model_codes_code = '\t[Flags]\n\tpublic enum ModelCode : long\n\t{{{model_codes}}\n\t}'
         model_codes_code_body = ''
         model_codes = []
@@ -194,7 +208,106 @@ class Generator:
         model_codes_code = model_codes_code.replace('{{model_codes}}', model_codes_code_body)
         Generator.__model_codes_code = model_codes_code
         Generator.__model_defines_code = f'{Generator.__dms_types_code}\n\n{Generator.__model_codes_code}'
-        return model_codes
+
+    # </editor-fold>
+
+    # <editor-fold desc="XML DATA GENERATION">
+
+    @staticmethod
+    def __get_parent_classes(class_name: str, parent_classes=None) -> list:
+        if parent_classes is None:
+            parent_classes = []
+
+        parent_class = [cls_props['inheritance'] for cls_name, cls_props in
+                        Generator.transformed_project_specification.items() if cls_name == class_name][0]
+
+        if parent_class != '':
+            Generator.__get_parent_classes(parent_class, parent_classes)
+
+        parent_classes.append(class_name)
+
+        return parent_classes
+
+    @staticmethod
+    def __get_all_class_properties(class_name: str) -> list:
+        parent_classes = Generator.__get_parent_classes(class_name)
+        class_properties = []
+
+        for parent_class in parent_classes:
+            parent_class_properties = {prop: type_ for prop, type_ in
+                                       Generator.transformed_project_specification[parent_class].items() if
+                                       prop not in ['type', 'inheritance', 'gid']}
+
+            for prop, type_ in parent_class_properties.items():
+                property_data_point = {
+                    'class_name': parent_class,
+                    'property_name': prop,
+                    'type': type_
+                }
+                class_properties.append(property_data_point)
+
+        return class_properties
+
+    @staticmethod
+    def __generate_properties_value(class_property: dict):
+        type_ = class_property.get('type')
+
+        if type_ in ['int']:
+            return randint(1, 10)
+        elif type_ in ['float', 'double']:
+            return round(uniform(1, 10), 1)
+        elif type_ == 'string':
+            return ''.join(choice(string.ascii_letters) for _ in range(randint(5, 10)))
+        elif type_ == 'bool':
+            return choice([True, False])
+        elif type_ == 'datetime':
+            return (datetime.now() + timedelta(days=randint(1, 365))).strftime('%Y-%m-%dT%H:%M:%S')
+        elif type_ == 'ref':
+            try:
+                return sample(Generator.concrete_classes_ids[class_property['property_name']], 1)[0]
+            except KeyError:
+                try:
+                    return sample(Generator.concrete_classes_ids[Generator.__reference_property_names_map[
+                        f'{class_property["class_name"]}_{class_property["property_name"]}']], 1)[0]
+                except KeyError:
+                    err_msg = f"[ERROR]: Coudln't find a reference for {class_property['class_name']}_{class_property['property_name']}."
+                    err_msg += f" Recommended action is to potentually expand the __reference_property_names_map."
+                    print(err_msg)
+                    return err_msg
+        elif type_ == 'reflist':
+            return ''
+        else:  # enum
+            try:
+                return choice(enums[type_])
+            except KeyError:
+                err_msg = f"[ERROR]: Coudln't find enum {class_property['class_name']}_{class_property['property_name']}. (Enum: {type_})"
+                err_msg += f" Recommended action is to potentually expand the enums dictionary."
+                print(err_msg)
+                return err_msg
+
+    @staticmethod
+    def __generate_class_properties_data(class_properties: list, instance_id: str) -> str:
+        class_properties_code = ''
+        for prop in class_properties:
+            value = Generator.__generate_properties_value(prop)
+            prop_code = ''
+
+            if prop['type'] == 'reflist':
+                if prop['class_name'] in Generator.concrete_classes_ids:
+                    Generator.concrete_classes_ids[prop['class_name']].add(instance_id)
+                else:
+                    Generator.concrete_classes_ids[prop['class_name']] = {instance_id}
+                continue
+            elif prop['type'] == 'ref':
+                prop_code = f'\t\t<cim:{prop["class_name"]}.{prop["property_name"]} rdf:resource="#{value}"/>'
+            else:
+                prop_code = f'\t\t<cim:{prop["class_name"]}.{prop["property_name"]}>{value}</cim:{prop["class_name"]}.{prop["property_name"]}>'
+
+            if class_properties_code:
+                prop_code = f'\n{prop_code}'
+            class_properties_code += prop_code
+
+        return class_properties_code
 
     @staticmethod
     def __generate_xml_data() -> None:
@@ -202,21 +315,38 @@ class Generator:
             Prompter.prompt_numeric_question('Concrete data generation', 'How many data points do you want per class')[
                 'Concrete data generation'])
         os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+
         xml_code = XML_FILE_TEMPLATE
         xml_data_code = ''
-        for class_name, class_attr in Generator.concrete_classes.items():
+
+        for class_name, class_attr in Generator.transformed_concrete_classes.items():
             xml_data_code += f'\n\n\t<!-- {class_name} -->'
+            class_properties = Generator.__get_all_class_properties(class_name)
+
             for data_point in range(data_points_count):
                 concrete_data_point = ConcreteClassDataPoint(randint(10 ** 9, (10 ** 10) - 1), class_name)
+                data_code = Generator.__generate_class_properties_data(class_properties, concrete_data_point.id)
+                concrete_data_point.code = concrete_data_point.code.replace('{{class_data}}', data_code)
                 xml_data_code += concrete_data_point.code
+
         xml_code = xml_code.replace('{{data}}', xml_data_code)
-        print(xml_code)
-        input()
+        Generator.__xml_data_code = xml_code
+        return
+
+    # </editor-fold>
+
+    # <editor-fold desc="CONVERTER METHODS GENERATION">
 
     @staticmethod
     def __generate_converter_methods() -> None:
         pass
 
+    # </editor-fold>
+
+    # <editor-fold desc="IMPORTER METHODS GENERATION">
+
     @staticmethod
     def __generate_importer_methods() -> None:
         pass
+
+    # </editor-fold>

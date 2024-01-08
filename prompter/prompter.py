@@ -9,7 +9,7 @@ from prompt_toolkit.shortcuts import CompleteStyle
 from prompt_toolkit.styles import Style
 from tqdm import tqdm
 
-import models.models as data
+from common.models import models as data
 
 
 class Prompter:

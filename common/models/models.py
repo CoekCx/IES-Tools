@@ -84,7 +84,6 @@ models = {
         ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('IntervalSchedule', 'ref'),
-        ('RegularIntervalSchedule', 'ref'),
         ('sequenceNumber', 'int'),
         ('value1', 'float'),
         ('value2', 'float'),
@@ -251,7 +250,7 @@ models = {
     'IrregularTimePoint': [
         ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
-        ('IrregularIntervalSchedule', 'ref'),
+        ('IntervalSchedule', 'ref'),
         ('time', 'float'),
         ('value1', 'float'),
         ('value2', 'float'),
@@ -332,3 +331,19 @@ models = {
 }
 
 classes = [x for x, y in models.items()]
+
+
+def transform_properties(properties_list):
+    transformed_dict = {}
+    for key, properties in properties_list.items():
+        transformed_properties = {}
+        for pair in properties:
+            if pair[1] in ['type', 'inheritance']:
+                transformed_properties[pair[1]] = pair[0]
+            else:
+                transformed_properties[pair[0]] = pair[1]
+        transformed_dict[key] = transformed_properties
+    return transformed_dict
+
+
+transformed_models = transform_properties(models)

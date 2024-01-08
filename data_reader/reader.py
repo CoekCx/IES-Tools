@@ -1,7 +1,7 @@
 import os
 import re
 
-from constants.constants import DATA_PATH
+from common.constants.constants import DATA_PATH
 
 
 class DataReader:
