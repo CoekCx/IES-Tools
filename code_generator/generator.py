@@ -6,7 +6,9 @@ from random import randint, uniform, choice, sample
 import pyperclip
 from inquirer2 import prompt as pmt
 
-from common.constants.templates import XML_FILE_TEMPLATE
+from common.constants.templates import XML_FILE_TEMPLATE, POPULATE_CLASS_PROPERTIES_METHOD, REFERENCE_PARAMETERS, \
+    INHERITANCE_METHOD_CALL, INHERITANCE_REFERENCE_PARAMETERS, PROPERTY_CODE, REFERENCE_PROPERTY_CODE, \
+    ENUM_PROPERTY_CODE, CONVERTER_METHODS_CODE, GET_DMS_ENUM_METHOD, GET_DMS_ENUM_CASE
 from common.enums.enums import enums
 from common.models.concrete_class_data_point import ConcreteClassDataPoint
 from common.models.dms_type import DMSType
@@ -17,6 +19,10 @@ from prompter.prompter import Prompter
 
 class Generator:
     project_specification = {}
+    transformed_project_specification = {}
+    transformed_concrete_classes = {}
+    concrete_classes_ids = {}
+    __project_enums = []
     depth = 0
     __type_mapping = {
         'bool': '01',
@@ -35,9 +41,13 @@ class Generator:
         'IrregularTimePoint_IntervalSchedule': 'IrregularIntervalSchedule',
     }
     __dms_types_code = ''
+    __property_model_codes = {}
+    __class_model_codes = []
     __model_codes_code = ''
     __model_defines_code = ''
     __xml_data_code = ''
+    __namespace = ''
+    __dll_file_name = ''
 
     @staticmethod
     def start_app() -> None:
@@ -178,7 +188,8 @@ class Generator:
     def __generate_model_defines() -> None:
         model_codes_code = '\t[Flags]\n\tpublic enum ModelCode : long\n\t{{{model_codes}}\n\t}'
         model_codes_code_body = ''
-        model_codes = []
+        class_model_codes = []
+        property_model_codes = {}
         dms_types = Generator.__generate_dms_types()
         class_inheritances = Generator.__generate_class_inheritance_values()
 
@@ -189,7 +200,7 @@ class Generator:
                 dms_type = '0000'
 
             class_model_code = ModelCode(class_name, class_inheritances[class_name], dms_type, '00', '00')
-            model_codes.append(class_model_code)
+            class_model_codes.append(class_model_code)
             model_codes_code_body += f'\n\t\t{class_model_code.__str__()},' if class_name == 'IdentifiedObject' else f'\n\n\t\t{class_model_code.__str__()},'
 
             property_serial_number = 0
@@ -202,10 +213,13 @@ class Generator:
                 property_serial_number += 1
                 property_model_code = ModelCode(class_name, class_inheritances[class_name], dms_type, attribute_index(),
                                                 Generator.__type_mapping.get(property_type, '0a'), property_name)
-                model_codes.append(property_model_code)
+                class_property_name = f'{class_name.upper()}_{property_name.upper()}'
+                property_model_codes[class_property_name] = property_model_code
                 model_codes_code_body += f'\n\t\t{property_model_code.__str__()},'
 
         model_codes_code = model_codes_code.replace('{{model_codes}}', model_codes_code_body)
+        Generator.__class_model_codes = class_model_codes
+        Generator.__property_model_codes = property_model_codes
         Generator.__model_codes_code = model_codes_code
         Generator.__model_defines_code = f'{Generator.__dms_types_code}\n\n{Generator.__model_codes_code}'
 
@@ -278,6 +292,7 @@ class Generator:
             return ''
         else:  # enum
             try:
+                Generator.__project_enums.append(type_)
                 return choice(enums[type_])
             except KeyError:
                 err_msg = f"[ERROR]: Coudln't find enum {class_property['class_name']}_{class_property['property_name']}. (Enum: {type_})"
@@ -338,8 +353,131 @@ class Generator:
     # <editor-fold desc="CONVERTER METHODS GENERATION">
 
     @staticmethod
-    def __generate_converter_methods() -> None:
-        pass
+    def __class_has_ref(class_name: str) -> bool:
+        return any(value == 'ref' for value in Generator.transformed_project_specification[class_name].values())
+
+    @staticmethod
+    def __get_class_parent(class_name: str) -> str:
+        return [value for key, value in Generator.transformed_project_specification[class_name].items() if
+                key == 'inheritance'][0]
+
+    @staticmethod
+    def __get_model_code_by_class_property(class_property_name: str) -> ModelCode:
+        return Generator.__property_model_codes.get(class_property_name, None)
+
+    @staticmethod
+    def __generate_class_converter_method_properties_code(class_name: str, class_attributes: dict) -> str:
+        parent_class = Generator.__get_class_parent(class_name)
+        count_reflist = sum(1 for value in class_attributes.values() if value == 'reflist')
+        properties_code = '\n' if len(class_attributes) > 2 + count_reflist and parent_class != '' else ''
+
+        for attr, type_ in class_attributes.items():
+            attr_model_code = f'{class_name.upper()}_{attr.upper()}'
+            capitalized_attr = attr.capitalize() if attr != 'mRID' else attr.upper()
+            if type_ in ['int', 'float', 'double', 'string', 'bool', 'datetime']:
+                properties_code += PROPERTY_CODE.replace('{{class_name}}', class_name) \
+                    .replace('{{property_name}}', capitalized_attr).replace('{{property_model_code}}',
+                                                                            attr_model_code)
+            elif type_ == 'ref':
+                properties_code += REFERENCE_PROPERTY_CODE.replace('{{class_name}}', class_name) \
+                    .replace('{{property_name}}', capitalized_attr).replace('{{property_model_code}}',
+                                                                            attr_model_code)
+            elif type_ in ['reflist'] or attr in ['inheritance', 'type', 'gid']:
+                continue
+            else:  # enum
+                ret_val = ENUM_PROPERTY_CODE
+                ret_val = ret_val.replace('{{class_name}}', class_name)
+                ret_val = ret_val.replace('{{property_name}}', capitalized_attr)
+                ret_val = ret_val.replace('{{property_model_code}}', attr_model_code)
+                ret_val = ret_val.replace('{{enum_name}}', type_)
+                properties_code += ret_val
+
+        return properties_code
+
+    @staticmethod
+    def __generate_populate_methods() -> str:
+        class_codes = ''
+        for class_name, class_attributes in Generator.transformed_project_specification.items():
+            class_code = '\n\n' if class_name != 'IdentifiedObject' else ''
+            class_code += POPULATE_CLASS_PROPERTIES_METHOD \
+                .replace('{{class_name}}', class_name).replace('{{namespace}}', Generator.__namespace)
+
+            class_has_ref = Generator.__class_has_ref(class_name)
+            if class_has_ref:
+                class_code = class_code.replace('{{reference_parameters}}', REFERENCE_PARAMETERS)
+            else:
+                class_code = class_code.replace('{{reference_parameters}}', '')
+
+            # inheritance method call
+            parent_class = Generator.__get_class_parent(class_name)
+            if parent_class != '':
+                parent_method_call = INHERITANCE_METHOD_CALL.replace('{{parent_class}}', parent_class).replace(
+                    '{{class_name}}', class_name)
+                parent_class_has_ref = Generator.__class_has_ref(parent_class)
+                if parent_class_has_ref:
+                    parent_method_call = parent_method_call.replace('{{reference_parameters}}',
+                                                                    INHERITANCE_REFERENCE_PARAMETERS)
+                else:
+                    parent_method_call = parent_method_call.replace('{{reference_parameters}}', '')
+
+                class_code = class_code.replace('{{inheritance_class_method}}', parent_method_call)
+            else:
+                class_code = class_code.replace('{{inheritance_class_method}}', '')
+
+            class_properties_code = Generator.__generate_class_converter_method_properties_code(class_name,
+                                                                                                class_attributes)
+            class_code = class_code.replace('{{properties}}', class_properties_code)
+            class_codes += class_code
+
+        return class_codes
+
+    @staticmethod
+    def __generate_get_dms_method_cases(enum_name: str) -> str:
+        values = enums.get(enum_name, None)
+        if not values:
+            err_msg = f"[ERROR]: Coudln't find enum: {enum_name}."
+            err_msg += f" Recommended action is to potentually expand the enums dictionary."
+            return err_msg
+
+        cases_code = ''
+        for value in values:
+            case_code = '\n' if cases_code != '' else ''
+            case_code += GET_DMS_ENUM_CASE
+            case_code = case_code.replace('{{namespace}}', Generator.__namespace)
+            case_code = case_code.replace('{{enum_name}}', enum_name)
+            case_code = case_code.replace('{{enum_value}}', value)
+            cases_code += case_code
+
+        return cases_code
+
+    @staticmethod
+    def __generate_get_dms_methods() -> str:
+        if len(Generator.__project_enums) == 0:
+            return ''
+
+        methods_code = ''
+        for enum_name in Generator.__project_enums:
+            enum_var_name = enum_name[0].lower() + enum_name[1:]
+            method_code = '\n\n' if methods_code != '' else ''
+            method_code += GET_DMS_ENUM_METHOD
+            method_cases_code = Generator.__generate_get_dms_method_cases(enum_name)
+            method_code = method_code.replace('{{enum_name}}', enum_name)
+            method_code = method_code.replace('{{namespace}}', Generator.__namespace)
+            method_code = method_code.replace('{{var_enum_name}}', enum_var_name)
+            method_code = method_code.replace('{{cases}}', method_cases_code)
+            methods_code += method_code
+
+        return methods_code
+
+    @staticmethod
+    def __generate_converter_methods() -> str:
+        convreter_methods_code = CONVERTER_METHODS_CODE
+        popualate_methods_code = Generator.__generate_populate_methods()
+        get_dms_enum_methods_code = Generator.__generate_get_dms_methods()
+        convreter_methods_code = convreter_methods_code.replace('{{populate_methods}}', popualate_methods_code)
+        convreter_methods_code = convreter_methods_code.replace('{{enums_methods}}', get_dms_enum_methods_code)
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        return convreter_methods_code
 
     # </editor-fold>
 

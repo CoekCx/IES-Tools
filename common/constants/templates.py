@@ -1,6 +1,5 @@
 # <editor-fold desc="XML DATA">
 
-
 XML_FILE_TEMPLATE = '''<?xml version="1.0" encoding="UTF-8"?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 \tmlns:cim="http://iec.ch/TC57/2010/CIM-schema-cim15#"
@@ -12,5 +11,69 @@ DATA_POINT_TEMPLATE = '''
 \t<cim:{{class_name}} rdf:ID="{{class_id}}">
 {{class_data}}
 \t</cim:{{class_name}}>'''
+
+# </editor-fold>
+
+# <editor-fold desc="CONVERTER METHODS">
+
+CONVERTER_METHODS_CODE = '''\t\t#region Populate ResourceDescription
+{{populate_methods}}
+\t\t#endregion Populate ResourceDescription
+
+\t\t#region Enums convert
+{{enums_methods}}
+\t\t#endregion Enums convert'''
+
+POPULATE_CLASS_PROPERTIES_METHOD = '''\t\tpublic static void Populate{{class_name}}Properties({{namespace}}.{{class_name}} cim{{class_name}}, ResourceDescription rd{{reference_parameters}})
+\t\t{
+\t\t\tif ((cim{{class_name}} != null) && (rd != null))
+\t\t\t{{{inheritance_class_method}}{{properties}}
+\t\t\t}
+\t\t}'''
+
+REFERENCE_PARAMETERS = ''', ImportHelper importHelper, TransformAndLoadReport report'''
+
+INHERITANCE_METHOD_CALL = '''\n\t\t\t\tPowerTransformerConverter.Populate{{parent_class}}Properties(cim{{class_name}}, rd{{reference_parameters}});'''
+
+INHERITANCE_REFERENCE_PARAMETERS = ''', importHelper, report'''
+
+PROPERTY_CODE = '''\n\t\t\t\tif(cim{{class_name}}.{{property_name}}HasValue)
+\t\t\t\t{
+\t\t\t\t\trd.AddProperty(new Property(ModelCode.{{property_model_code}}, cim{{class_name}}.{{property_name}}));
+\t\t\t\t}'''
+
+ENUM_PROPERTY_CODE = '''\n\t\t\t\tif(cim{{class_name}}.{{property_name}}HasValue)
+\t\t\t\t{
+\t\t\t\t\trd.AddProperty(new Property(ModelCode.{{property_model_code}}, (short)GetDMS{{enum_name}}(cim{{class_name}}.{{property_name}})));
+\t\t\t\t}'''
+
+REFERENCE_PROPERTY_CODE = '''\n\t\t\t\tif (cim{{class_name}}.{{property_name}}HasValue)
+\t\t\t\t{
+\t\t\t\t\tlong gid = importHelper.GetMappedGID(cim{{class_name}}.{{property_name}}.ID);
+\t\t\t\t\tif (gid < 0)
+\t\t\t\t\t{
+\t\t\t\t\t\treport.Report.Append("WARNING: Convert ").Append(cim{{class_name}}.GetType().ToString()).Append(" rdfID = \"").Append(cim{{class_name}}.ID);
+\t\t\t\t\t\treport.Report.Append("\" - Failed to set reference to {{property_name}}: rdfID \"").Append(cim{{class_name}}.{{property_name}}.ID).AppendLine(" \" is not mapped to GID!");
+\t\t\t\t\t}
+\t\t\t\t\trd.AddProperty(new Property(ModelCode.{{property_model_code}}, gid));
+\t\t\t\t}'''
+
+GET_DMS_ENUM_METHOD = '''\t\tpublic static {{enum_name}} GetDMS{{enum_name}}({{namespace}}.{{enum_name}} {{var_enum_name}})
+\t\t{
+\t\t\tswitch ({{var_enum_name}})
+\t\t\t{
+{{cases}}
+
+\t\t\t\tdefault:
+\t\t\t\t\tthrow new ArgumentOutOfRangeException(nameof(unitSymbol), unitSymbol, "Unhandled unit symbol.");
+\t\t\t}
+\t\t}'''
+
+GET_DMS_ENUM_CASE = '''\t\t\t\tcase {{namespace}}.{{enum_name}}.{{enum_value}}:
+\t\t\t\t\treturn {{enum_name}}.{{enum_value}};'''
+
+# </editor-fold>
+
+# <editor-fold desc="IMPORTER METHODS">
 
 # </editor-fold>

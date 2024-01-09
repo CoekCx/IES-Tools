@@ -16,6 +16,12 @@ class ModelCode:
         if attribute_name is not None:
             self.attribute_name = attribute_name
 
+    def get_model_code_str(self):
+        if self.attribute_name:
+            return f'{self.class_name.upper()}_{self.attribute_name.upper()}'
+        else:
+            return self.class_name.upper()
+
     def __str__(self):
         class_width = 45  # Adjust the width for names
 
