@@ -6,9 +6,14 @@ from random import randint, uniform, choice, sample
 import pyperclip
 from inquirer2 import prompt as pmt
 
-from common.constants.templates import XML_FILE_TEMPLATE, POPULATE_CLASS_PROPERTIES_METHOD, REFERENCE_PARAMETERS, \
-    INHERITANCE_METHOD_CALL, INHERITANCE_REFERENCE_PARAMETERS, PROPERTY_CODE, REFERENCE_PROPERTY_CODE, \
-    ENUM_PROPERTY_CODE, CONVERTER_METHODS_CODE, GET_DMS_ENUM_METHOD, GET_DMS_ENUM_CASE
+from common.constants.templates import XML_FILE_TEMPLATE, POPULATE_CLASS_PROPERTIES_METHOD_TEMPLATE, \
+    REFERENCE_PARAMETERS_TEMPLATE, \
+    INHERITANCE_METHOD_CALL_TEMPLATE, INHERITANCE_REFERENCE_PARAMETERS, PROPERTY_CODE_TEMPLATE, \
+    REFERENCE_PROPERTY_CODE_TEMPLATE, \
+    ENUM_PROPERTY_CODE_TEMPLATE, CONVERTER_METHODS_CODE_TEMPLATE, GET_DMS_ENUM_METHOD_TEMPLATE, \
+    GET_DMS_ENUM_CASE_TEMPLATE, IMPORT_METHODS_CODE_TEMPLATE, IMPORT_METHOD_CALLS_FUNCTION_TEMPLATE, \
+    IMPORT_METHOD_CALL_TEMPLATE, IMPORT_CLASS_METHOD_TEMPLATE, IMPORT_CLASS_METHOD_PAIR, \
+    CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE
 from common.enums.enums import enums
 from common.models.concrete_class_data_point import ConcreteClassDataPoint
 from common.models.dms_type import DMSType
@@ -375,17 +380,17 @@ class Generator:
             attr_model_code = f'{class_name.upper()}_{attr.upper()}'
             capitalized_attr = attr.capitalize() if attr != 'mRID' else attr.upper()
             if type_ in ['int', 'float', 'double', 'string', 'bool', 'datetime']:
-                properties_code += PROPERTY_CODE.replace('{{class_name}}', class_name) \
+                properties_code += PROPERTY_CODE_TEMPLATE.replace('{{class_name}}', class_name) \
                     .replace('{{property_name}}', capitalized_attr).replace('{{property_model_code}}',
                                                                             attr_model_code)
             elif type_ == 'ref':
-                properties_code += REFERENCE_PROPERTY_CODE.replace('{{class_name}}', class_name) \
+                properties_code += REFERENCE_PROPERTY_CODE_TEMPLATE.replace('{{class_name}}', class_name) \
                     .replace('{{property_name}}', capitalized_attr).replace('{{property_model_code}}',
                                                                             attr_model_code)
             elif type_ in ['reflist'] or attr in ['inheritance', 'type', 'gid']:
                 continue
             else:  # enum
-                ret_val = ENUM_PROPERTY_CODE
+                ret_val = ENUM_PROPERTY_CODE_TEMPLATE
                 ret_val = ret_val.replace('{{class_name}}', class_name)
                 ret_val = ret_val.replace('{{property_name}}', capitalized_attr)
                 ret_val = ret_val.replace('{{property_model_code}}', attr_model_code)
@@ -399,19 +404,19 @@ class Generator:
         class_codes = ''
         for class_name, class_attributes in Generator.transformed_project_specification.items():
             class_code = '\n\n' if class_name != 'IdentifiedObject' else ''
-            class_code += POPULATE_CLASS_PROPERTIES_METHOD \
+            class_code += POPULATE_CLASS_PROPERTIES_METHOD_TEMPLATE \
                 .replace('{{class_name}}', class_name).replace('{{namespace}}', Generator.__namespace)
 
             class_has_ref = Generator.__class_has_ref(class_name)
             if class_has_ref:
-                class_code = class_code.replace('{{reference_parameters}}', REFERENCE_PARAMETERS)
+                class_code = class_code.replace('{{reference_parameters}}', REFERENCE_PARAMETERS_TEMPLATE)
             else:
                 class_code = class_code.replace('{{reference_parameters}}', '')
 
             # inheritance method call
             parent_class = Generator.__get_class_parent(class_name)
             if parent_class != '':
-                parent_method_call = INHERITANCE_METHOD_CALL.replace('{{parent_class}}', parent_class).replace(
+                parent_method_call = INHERITANCE_METHOD_CALL_TEMPLATE.replace('{{parent_class}}', parent_class).replace(
                     '{{class_name}}', class_name)
                 parent_class_has_ref = Generator.__class_has_ref(parent_class)
                 if parent_class_has_ref:
@@ -442,7 +447,7 @@ class Generator:
         cases_code = ''
         for value in values:
             case_code = '\n' if cases_code != '' else ''
-            case_code += GET_DMS_ENUM_CASE
+            case_code += GET_DMS_ENUM_CASE_TEMPLATE
             case_code = case_code.replace('{{namespace}}', Generator.__namespace)
             case_code = case_code.replace('{{enum_name}}', enum_name)
             case_code = case_code.replace('{{enum_value}}', value)
@@ -459,7 +464,7 @@ class Generator:
         for enum_name in Generator.__project_enums:
             enum_var_name = enum_name[0].lower() + enum_name[1:]
             method_code = '\n\n' if methods_code != '' else ''
-            method_code += GET_DMS_ENUM_METHOD
+            method_code += GET_DMS_ENUM_METHOD_TEMPLATE
             method_cases_code = Generator.__generate_get_dms_method_cases(enum_name)
             method_code = method_code.replace('{{enum_name}}', enum_name)
             method_code = method_code.replace('{{namespace}}', Generator.__namespace)
@@ -471,12 +476,11 @@ class Generator:
 
     @staticmethod
     def __generate_converter_methods() -> str:
-        convreter_methods_code = CONVERTER_METHODS_CODE
+        convreter_methods_code = CONVERTER_METHODS_CODE_TEMPLATE
         popualate_methods_code = Generator.__generate_populate_methods()
         get_dms_enum_methods_code = Generator.__generate_get_dms_methods()
         convreter_methods_code = convreter_methods_code.replace('{{populate_methods}}', popualate_methods_code)
         convreter_methods_code = convreter_methods_code.replace('{{enums_methods}}', get_dms_enum_methods_code)
-        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
         return convreter_methods_code
 
     # </editor-fold>
@@ -484,7 +488,46 @@ class Generator:
     # <editor-fold desc="IMPORTER METHODS GENERATION">
 
     @staticmethod
-    def __generate_importer_methods() -> None:
-        pass
+    def __generate_import_methods_calls_function() -> str:
+        import_methods_calls_function_code = IMPORT_METHOD_CALLS_FUNCTION_TEMPLATE
+        import_function_calls_code = ''
+
+        for class_name, attribues in Generator.transformed_concrete_classes.items():
+            import_function_call_code = '\n' if import_function_calls_code != '' else ''
+            import_function_call_code += IMPORT_METHOD_CALL_TEMPLATE.replace('{{class_name}}', class_name)
+            import_function_calls_code += import_function_call_code
+
+        import_methods_calls_function_code = import_methods_calls_function_code.replace('{{import_calls}}',
+                                                                                        import_function_calls_code)
+        return import_methods_calls_function_code
+
+    @staticmethod
+    def __generate_importer_methods_pair_for_class(class_name: str) -> str:
+        import_class_method_pair_code = IMPORT_CLASS_METHOD_PAIR
+        import_class_method_code = IMPORT_CLASS_METHOD_TEMPLATE.replace('{{class_name}}', class_name)
+        create_class_descriptio_method_code = CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE \
+            .replace('{{class_name}}', class_name).replace('{{model_code_name}}', class_name.upper())
+        import_class_method_pair_code = import_class_method_pair_code \
+            .replace('{{import_method}}', import_class_method_code) \
+            .replace('{{create_description_method}}', create_class_descriptio_method_code)
+        return import_class_method_pair_code
+
+    @staticmethod
+    def __generate_importer_methods() -> str:
+        import_methods_code = IMPORT_METHODS_CODE_TEMPLATE
+        import_methods_calls_function_code = Generator.__generate_import_methods_calls_function()
+
+        import_class_methods_code = ''
+        for class_name, attribues in Generator.transformed_concrete_classes.items():
+            importer_method_pair_code = Generator.__generate_importer_methods_pair_for_class(class_name)
+            if import_class_methods_code != '':
+                importer_method_pair_code = '\n\n' + importer_method_pair_code
+            import_class_methods_code += importer_method_pair_code
+
+        import_methods_code = import_methods_code.replace('{{import_methods_calls_function}}',
+                                                          import_methods_calls_function_code)
+        import_methods_code = import_methods_code.replace('{{import_methods}}', import_class_methods_code)
+
+        return import_methods_code
 
     # </editor-fold>

@@ -16,7 +16,7 @@ DATA_POINT_TEMPLATE = '''
 
 # <editor-fold desc="CONVERTER METHODS">
 
-CONVERTER_METHODS_CODE = '''\t\t#region Populate ResourceDescription
+CONVERTER_METHODS_CODE_TEMPLATE = '''\t\t#region Populate ResourceDescription
 {{populate_methods}}
 \t\t#endregion Populate ResourceDescription
 
@@ -24,30 +24,30 @@ CONVERTER_METHODS_CODE = '''\t\t#region Populate ResourceDescription
 {{enums_methods}}
 \t\t#endregion Enums convert'''
 
-POPULATE_CLASS_PROPERTIES_METHOD = '''\t\tpublic static void Populate{{class_name}}Properties({{namespace}}.{{class_name}} cim{{class_name}}, ResourceDescription rd{{reference_parameters}})
+POPULATE_CLASS_PROPERTIES_METHOD_TEMPLATE = '''\t\tpublic static void Populate{{class_name}}Properties({{namespace}}.{{class_name}} cim{{class_name}}, ResourceDescription rd{{reference_parameters}})
 \t\t{
 \t\t\tif ((cim{{class_name}} != null) && (rd != null))
 \t\t\t{{{inheritance_class_method}}{{properties}}
 \t\t\t}
 \t\t}'''
 
-REFERENCE_PARAMETERS = ''', ImportHelper importHelper, TransformAndLoadReport report'''
+REFERENCE_PARAMETERS_TEMPLATE = ''', ImportHelper importHelper, TransformAndLoadReport report'''
 
-INHERITANCE_METHOD_CALL = '''\n\t\t\t\tPowerTransformerConverter.Populate{{parent_class}}Properties(cim{{class_name}}, rd{{reference_parameters}});'''
+INHERITANCE_METHOD_CALL_TEMPLATE = '''\n\t\t\t\tPowerTransformerConverter.Populate{{parent_class}}Properties(cim{{class_name}}, rd{{reference_parameters}});'''
 
 INHERITANCE_REFERENCE_PARAMETERS = ''', importHelper, report'''
 
-PROPERTY_CODE = '''\n\t\t\t\tif(cim{{class_name}}.{{property_name}}HasValue)
+PROPERTY_CODE_TEMPLATE = '''\n\t\t\t\tif(cim{{class_name}}.{{property_name}}HasValue)
 \t\t\t\t{
 \t\t\t\t\trd.AddProperty(new Property(ModelCode.{{property_model_code}}, cim{{class_name}}.{{property_name}}));
 \t\t\t\t}'''
 
-ENUM_PROPERTY_CODE = '''\n\t\t\t\tif(cim{{class_name}}.{{property_name}}HasValue)
+ENUM_PROPERTY_CODE_TEMPLATE = '''\n\t\t\t\tif(cim{{class_name}}.{{property_name}}HasValue)
 \t\t\t\t{
 \t\t\t\t\trd.AddProperty(new Property(ModelCode.{{property_model_code}}, (short)GetDMS{{enum_name}}(cim{{class_name}}.{{property_name}})));
 \t\t\t\t}'''
 
-REFERENCE_PROPERTY_CODE = '''\n\t\t\t\tif (cim{{class_name}}.{{property_name}}HasValue)
+REFERENCE_PROPERTY_CODE_TEMPLATE = '''\n\t\t\t\tif (cim{{class_name}}.{{property_name}}HasValue)
 \t\t\t\t{
 \t\t\t\t\tlong gid = importHelper.GetMappedGID(cim{{class_name}}.{{property_name}}.ID);
 \t\t\t\t\tif (gid < 0)
@@ -58,7 +58,7 @@ REFERENCE_PROPERTY_CODE = '''\n\t\t\t\tif (cim{{class_name}}.{{property_name}}Ha
 \t\t\t\t\trd.AddProperty(new Property(ModelCode.{{property_model_code}}, gid));
 \t\t\t\t}'''
 
-GET_DMS_ENUM_METHOD = '''\t\tpublic static {{enum_name}} GetDMS{{enum_name}}({{namespace}}.{{enum_name}} {{var_enum_name}})
+GET_DMS_ENUM_METHOD_TEMPLATE = '''\t\tpublic static {{enum_name}} GetDMS{{enum_name}}({{namespace}}.{{enum_name}} {{var_enum_name}})
 \t\t{
 \t\t\tswitch ({{var_enum_name}})
 \t\t\t{
@@ -69,11 +69,75 @@ GET_DMS_ENUM_METHOD = '''\t\tpublic static {{enum_name}} GetDMS{{enum_name}}({{n
 \t\t\t}
 \t\t}'''
 
-GET_DMS_ENUM_CASE = '''\t\t\t\tcase {{namespace}}.{{enum_name}}.{{enum_value}}:
+GET_DMS_ENUM_CASE_TEMPLATE = '''\t\t\t\tcase {{namespace}}.{{enum_name}}.{{enum_value}}:
 \t\t\t\t\treturn {{enum_name}}.{{enum_value}};'''
 
 # </editor-fold>
 
 # <editor-fold desc="IMPORTER METHODS">
+
+IMPORT_METHODS_CODE_TEMPLATE = '''{{import_methods_calls_function}}
+
+\t\t#region Import
+{{import_methods}}
+\t\t#endregion Import'''
+
+IMPORT_METHOD_CALLS_FUNCTION_TEMPLATE = '''\t\t/// <summary>
+\t\t/// Method performs conversion of network elements from CIM based concrete model into DMS model.
+\t\t/// </summary>
+\t\tprivate void ConvertModelAndPopulateDelta()
+\t\t{
+\t\t\tLogManager.Log("Loading elements and creating delta...", LogLevel.Info);
+
+\t\t\t//// import all concrete model types (DMSType enum)
+{{import_calls}}
+
+\t\t\tLogManager.Log("Loading elements and creating delta completed.", LogLevel.Info);
+\t\t}'''
+
+IMPORT_METHOD_CALL_TEMPLATE = '''\t\t\tImport{{class_name}}();'''
+
+IMPORT_CLASS_METHOD_PAIR = '''{{import_method}}
+
+{{create_description_method}}'''
+
+IMPORT_CLASS_METHOD_TEMPLATE = '''\t\tprivate void Import{{class_name}}()
+\t\t{
+\t\t\tSortedDictionary<string, object> cim{{class_name}}es = concreteModel.GetAllObjectsOfType("FTNProject.{{class_name}}");
+\t\t\tif (cim{{class_name}}es != null)
+\t\t\t{
+\t\t\t\tforeach (KeyValuePair<string, object> cim{{class_name}}Pair in cim{{class_name}}es)
+\t\t\t\t{
+\t\t\t\t\tFTNProject.{{class_name}} cim{{class_name}} = cim{{class_name}}Pair.Value as FTNProject.{{class_name}};
+
+\t\t\t\t\tResourceDescription rd = Create{{class_name}}Description(cim{{class_name}});
+\t\t\t\t\tif (rd != null)
+\t\t\t\t\t{
+\t\t\t\t\t	delta.AddDeltaOperation(DeltaOpType.Insert, rd, true);
+\t\t\t\t\t	report.Report.Append("{{class_name}} ID = ").Append(cim{{class_name}}.ID).Append(" SUCCESSFULLY converted to GID = ").AppendLine(rd.Id.ToString());
+\t\t\t\t\t}
+\t\t\t\t\telse
+\t\t\t\t\t{
+\t\t\t\t\t	report.Report.Append("{{class_name}} ID = ").Append(cim{{class_name}}.ID).AppendLine(" FAILED to be converted");
+\t\t\t\t\t}
+\t\t\t\t}
+\t\t\t\treport.Report.AppendLine();
+\t\t\t}
+\t\t}'''
+
+CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE = '''\t\tprivate ResourceDescription Create{{class_name}}Description(FTNProject.{{class_name}} cim{{class_name}})
+\t\t{
+\t\t\tResourceDescription rd = null;
+\t\t\tif (cim{{class_name}} != null)
+\t\t\t{
+\t\t\t\tlong gid = ModelCodeHelper.CreateGlobalId(0, (short)DMSType.{{model_code_name}}, importHelper.CheckOutIndexForDMSType(DMSType.{{model_code_name}}));
+\t\t\t\trd = new ResourceDescription(gid);
+\t\t\t\timportHelper.DefineIDMapping(cim{{class_name}}.ID, gid);
+
+\t\t\t\t////populate ResourceDescription
+\t\t\t\tPowerTransformerConverter.Populate{{class_name}}Properties(cim{{class_name}}, rd{{reference_parameters}});
+\t\t\t}
+\t\t\treturn rd;
+\t\t}'''
 
 # </editor-fold>
