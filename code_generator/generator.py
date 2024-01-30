@@ -23,12 +23,11 @@ from prompter.prompter import Prompter
 
 
 class Generator:
-    project_specification = {}
-    transformed_project_specification = {}
-    transformed_concrete_classes = {}
-    concrete_classes_ids = {}
+    __project_specification = {}
+    __transformed_project_specification = {}
+    __transformed_concrete_classes = {}
+    __concrete_classes_ids = {}
     __project_enums = []
-    depth = 0
     __type_mapping = {
         'bool': '01',
         'int': '03',
@@ -45,14 +44,17 @@ class Generator:
         'RegularTimePoint_IntervalSchedule': 'RegularIntervalSchedule',
         'IrregularTimePoint_IntervalSchedule': 'IrregularIntervalSchedule',
     }
+    __namespace = ''
+    __dll_file_prefix = ''
+    __depth = 0
     __dms_types_code = ''
     __property_model_codes = {}
     __class_model_codes = []
     __model_codes_code = ''
     __model_defines_code = ''
     __xml_data_code = ''
-    __namespace = ''
-    __dll_file_name = ''
+    __converter_methods_code = ''
+    __import_methods_code = ''
 
     @staticmethod
     def start_app() -> None:
@@ -72,6 +74,10 @@ class Generator:
         if specification_answer['enter_specifications']:
             # If the user wants to enter specifications, call the method
             Generator.__get_project_specifications()
+        else:
+            Generator.__namespace = 'FTN1'
+            Generator.__dll_file_prefix = 'classes'
+            Generator.__get_project_specifications(True)
 
         Generator.__main_menu()
 
@@ -99,30 +105,71 @@ class Generator:
             choice = answers['menu_choice']
 
             if choice == 'Set Project Specification':
+                Generator.__get_environment_variables()
                 Generator.__get_project_specifications()
             elif choice == 'Generate XML data':
                 Generator.__generate_xml_data()
-                pyperclip.copy(Generator.__xml_data_code)
-                print(Generator.__xml_data_code)
-                input()
             elif choice == 'Generate Model Defines':
                 Generator.__generate_model_defines()
-                pyperclip.copy(Generator.__model_defines_code)
-                print(Generator.__model_defines_code)
-                input()
             elif choice == 'Generate Converter Methods':
                 Generator.__generate_converter_methods()
             elif choice == 'Generate Importer Methods':
                 Generator.__generate_importer_methods()
 
+    # <editor-fold desc="PROJECT SETUP">
+
     @staticmethod
-    def __get_project_specifications() -> None:
-        Generator.project_specification = Prompter.prompt_user_for_project_specification()
-        Generator.transformed_project_specification = transform_properties(Generator.project_specification)
+    def __get_environment_variables() -> None:
+        Generator.__namespace, Generator.__dll_file_prefix = Prompter.prompt_user_for_environment_varialbes()
+
+    @staticmethod
+    def __get_project_specifications(autoset: bool = False) -> None:
+        if autoset:
+            Generator.__project_specification = {
+                'IdentifiedObject': [('', 'inheritance'), ('abstract', 'type'), ('gid', 'long'), ('mRID', 'string'),
+                                     ('aliasName', 'string'), ('name', 'string')],
+                'Curve': [('IdentifiedObject', 'inheritance'), ('concrete', 'type'), ('CurveDatas', 'reflist'),
+                          ('curveStyle', 'CurveStyle'), ('xMultiplier', 'UnitMultiplier'), ('xUnit', 'UnitSymbol'),
+                          ('y1Multiplier', 'UnitMultiplier'), ('y1Unit', 'UnitSymbol'),
+                          ('y2Multiplier', 'UnitMultiplier'), ('y2Unit', 'UnitSymbol'),
+                          ('y3Multiplier', 'UnitMultiplier'), ('y3Unit', 'UnitSymbol')],
+                'CurveData': [('IdentifiedObject', 'inheritance'), ('concrete', 'type'), ('Curve', 'ref'),
+                              ('xvalue', 'float'), ('y1value', 'float'), ('y2value', 'float'), ('y3value', 'float')],
+                'PowerSystemResource': [('IdentifiedObject', 'inheritance'), ('abstract', 'type'),
+                                        ('OutageSchedules', 'reflist')],
+                'Equipment': [('PowerSystemResource', 'inheritance'), ('abstract', 'type'), ('aggregate', 'bool'),
+                              ('normallyInService', 'bool')],
+                'ConductingEquipment': [('Equipment', 'inheritance'), ('abstract', 'type')],
+                'Switch': [('ConductingEquipment', 'inheritance'), ('abstract', 'type'), ('normalOpen', 'bool'),
+                           ('retaned', 'bool'), ('switchOnCount', 'int'), ('switchOnDate', 'datetime'),
+                           ('ratedCurrent', 'float'), ('SwitchSchedules', 'reflist')],
+                'Disconnector': [('Switch', 'inheritance'), ('concrete', 'type')],
+                'BasicIntervalSchedule': [('IdentifiedObject', 'inheritance'), ('abstract', 'type'),
+                                          ('startTime', 'datetime'), ('value1Multiplier', 'UnitMultiplier'),
+                                          ('value1Unit', 'UnitSymbol'), ('value2Multiplier', 'UnitMultiplier'),
+                                          ('value2Unit', 'UnitSymbol')],
+                'IrregularIntervalSchedule': [('BasicIntervalSchedule', 'inheritance'), ('abstract', 'type'),
+                                              ('IrregularTimePoints', 'reflist')],
+                'OutageSchedule': [('IrregularIntervalSchedule', 'inheritance'), ('concrete', 'type'),
+                                   ('PowerSystemResource', 'ref')],
+                'RegularIntervalSchedule': [('BasicIntervalSchedule', 'inheritance'), ('concrete', 'type'),
+                                            ('RegularTimePoints', 'reflist'), ('endTime', 'datetime'),
+                                            ('timeStep', 'float')],
+                'IrregularTimePoint': [('IdentifiedObject', 'inheritance'), ('concrete', 'type'),
+                                       ('IntervalSchedule', 'ref'), ('time', 'float'), ('value1', 'float'),
+                                       ('value2', 'float')],
+                'RegularTimePoint': [('IdentifiedObject', 'inheritance'), ('concrete', 'type'),
+                                     ('IntervalSchedule', 'ref'), ('sequenceNumber', 'int'), ('value1', 'float'),
+                                     ('value2', 'float')]}
+        else:
+            Generator.__project_specification = Prompter.prompt_user_for_project_specification()
+        Generator.__transformed_project_specification = transform_properties(Generator.__project_specification)
         concrete_classes = {class_name: class_attribues for class_name, class_attribues in
-                            Generator.project_specification.items() if
+                            Generator.__project_specification.items() if
                             class_attribues[1][0] == 'concrete'}
-        Generator.transformed_concrete_classes = transform_properties(concrete_classes)
+        Generator.__transformed_concrete_classes = transform_properties(concrete_classes)
+
+    # </editor-fold>
 
     # <editor-fold desc="MODEL DEFINES GENERATION">
 
@@ -132,7 +179,7 @@ class Generator:
         inheritance_tree = {}
 
         # Populate the tree based on the inheritance relationships
-        for class_name, properties in Generator.project_specification.items():
+        for class_name, properties in Generator.__project_specification.items():
             inheritance = [prop[0] for prop in properties if prop[1] == 'inheritance' and prop[1][1] != '']
             if inheritance:
                 parent_class = inheritance[0]
@@ -152,17 +199,17 @@ class Generator:
 
         # Function to recursively assign values based on inheritance
         def assign_values(node):
-            values[Generator.depth] += 1
+            values[Generator.__depth] += 1
             class_values[node] = get_text_value()
             children = inheritance_tree.get(node, [])
             # Print out formated class inheritance values
             # print(f'{" " * Generator.depth}{node.ljust(30 - Generator.depth)} = {get_text_value()}')
             for child in children:
-                Generator.depth += 1
+                Generator.__depth += 1
                 assign_values(child)
-            if values[Generator.depth + 1] > 0:
-                values[Generator.depth + 1] = 0
-            Generator.depth -= 1
+            if values[Generator.__depth + 1] > 0:
+                values[Generator.__depth + 1] = 0
+            Generator.__depth -= 1
 
         # Start assigning values from the root (the class with an empty string as inheritance)
         assign_values('IdentifiedObject')
@@ -178,7 +225,7 @@ class Generator:
         dms_types = []
         concrete_class_counter = 1
 
-        for class_name, properties in Generator.project_specification.items():
+        for class_name, properties in Generator.__project_specification.items():
             if properties.__contains__(('concrete', 'type')):
                 new_dms_type = DMSType(class_name, concrete_class_counter)
                 dms_types.append(new_dms_type)
@@ -198,7 +245,7 @@ class Generator:
         dms_types = Generator.__generate_dms_types()
         class_inheritances = Generator.__generate_class_inheritance_values()
 
-        for class_name, properties in Generator.project_specification.items():
+        for class_name, properties in Generator.__project_specification.items():
             if dms_types.__contains__(DMSType(class_name)):
                 dms_type = [x.get_value() for x in dms_types if x.name == class_name][0]
             else:
@@ -227,6 +274,7 @@ class Generator:
         Generator.__property_model_codes = property_model_codes
         Generator.__model_codes_code = model_codes_code
         Generator.__model_defines_code = f'{Generator.__dms_types_code}\n\n{Generator.__model_codes_code}'
+        pyperclip.copy(Generator.__model_defines_code)
 
     # </editor-fold>
 
@@ -238,7 +286,7 @@ class Generator:
             parent_classes = []
 
         parent_class = [cls_props['inheritance'] for cls_name, cls_props in
-                        Generator.transformed_project_specification.items() if cls_name == class_name][0]
+                        Generator.__transformed_project_specification.items() if cls_name == class_name][0]
 
         if parent_class != '':
             Generator.__get_parent_classes(parent_class, parent_classes)
@@ -254,7 +302,7 @@ class Generator:
 
         for parent_class in parent_classes:
             parent_class_properties = {prop: type_ for prop, type_ in
-                                       Generator.transformed_project_specification[parent_class].items() if
+                                       Generator.__transformed_project_specification[parent_class].items() if
                                        prop not in ['type', 'inheritance', 'gid']}
 
             for prop, type_ in parent_class_properties.items():
@@ -283,10 +331,10 @@ class Generator:
             return (datetime.now() + timedelta(days=randint(1, 365))).strftime('%Y-%m-%dT%H:%M:%S')
         elif type_ == 'ref':
             try:
-                return sample(Generator.concrete_classes_ids[class_property['property_name']], 1)[0]
+                return sample(Generator.__concrete_classes_ids[class_property['property_name']], 1)[0]
             except KeyError:
                 try:
-                    return sample(Generator.concrete_classes_ids[Generator.__reference_property_names_map[
+                    return sample(Generator.__concrete_classes_ids[Generator.__reference_property_names_map[
                         f'{class_property["class_name"]}_{class_property["property_name"]}']], 1)[0]
                 except KeyError:
                     err_msg = f"[ERROR]: Coudln't find a reference for {class_property['class_name']}_{class_property['property_name']}."
@@ -297,7 +345,8 @@ class Generator:
             return ''
         else:  # enum
             try:
-                Generator.__project_enums.append(type_)
+                if type_ not in Generator.__project_enums:
+                    Generator.__project_enums.append(type_)
                 return choice(enums[type_])
             except KeyError:
                 err_msg = f"[ERROR]: Coudln't find enum {class_property['class_name']}_{class_property['property_name']}. (Enum: {type_})"
@@ -313,10 +362,10 @@ class Generator:
             prop_code = ''
 
             if prop['type'] == 'reflist':
-                if prop['class_name'] in Generator.concrete_classes_ids:
-                    Generator.concrete_classes_ids[prop['class_name']].add(instance_id)
+                if prop['class_name'] in Generator.__concrete_classes_ids:
+                    Generator.__concrete_classes_ids[prop['class_name']].add(instance_id)
                 else:
-                    Generator.concrete_classes_ids[prop['class_name']] = {instance_id}
+                    Generator.__concrete_classes_ids[prop['class_name']] = {instance_id}
                 continue
             elif prop['type'] == 'ref':
                 prop_code = f'\t\t<cim:{prop["class_name"]}.{prop["property_name"]} rdf:resource="#{value}"/>'
@@ -339,7 +388,7 @@ class Generator:
         xml_code = XML_FILE_TEMPLATE
         xml_data_code = ''
 
-        for class_name, class_attr in Generator.transformed_concrete_classes.items():
+        for class_name, class_attr in Generator.__transformed_concrete_classes.items():
             xml_data_code += f'\n\n\t<!-- {class_name} -->'
             class_properties = Generator.__get_all_class_properties(class_name)
 
@@ -351,7 +400,7 @@ class Generator:
 
         xml_code = xml_code.replace('{{data}}', xml_data_code)
         Generator.__xml_data_code = xml_code
-        return
+        pyperclip.copy(Generator.__xml_data_code)
 
     # </editor-fold>
 
@@ -359,11 +408,11 @@ class Generator:
 
     @staticmethod
     def __class_has_ref(class_name: str) -> bool:
-        return any(value == 'ref' for value in Generator.transformed_project_specification[class_name].values())
+        return any(value == 'ref' for value in Generator.__transformed_project_specification[class_name].values())
 
     @staticmethod
     def __get_class_parent(class_name: str) -> str:
-        return [value for key, value in Generator.transformed_project_specification[class_name].items() if
+        return [value for key, value in Generator.__transformed_project_specification[class_name].items() if
                 key == 'inheritance'][0]
 
     @staticmethod
@@ -402,7 +451,7 @@ class Generator:
     @staticmethod
     def __generate_populate_methods() -> str:
         class_codes = ''
-        for class_name, class_attributes in Generator.transformed_project_specification.items():
+        for class_name, class_attributes in Generator.__transformed_project_specification.items():
             class_code = '\n\n' if class_name != 'IdentifiedObject' else ''
             class_code += POPULATE_CLASS_PROPERTIES_METHOD_TEMPLATE \
                 .replace('{{class_name}}', class_name).replace('{{namespace}}', Generator.__namespace)
@@ -475,13 +524,14 @@ class Generator:
         return methods_code
 
     @staticmethod
-    def __generate_converter_methods() -> str:
+    def __generate_converter_methods() -> None:
         convreter_methods_code = CONVERTER_METHODS_CODE_TEMPLATE
         popualate_methods_code = Generator.__generate_populate_methods()
         get_dms_enum_methods_code = Generator.__generate_get_dms_methods()
         convreter_methods_code = convreter_methods_code.replace('{{populate_methods}}', popualate_methods_code)
         convreter_methods_code = convreter_methods_code.replace('{{enums_methods}}', get_dms_enum_methods_code)
-        return convreter_methods_code
+        Generator.__converter_methods_code = convreter_methods_code
+        pyperclip.copy(convreter_methods_code)
 
     # </editor-fold>
 
@@ -492,7 +542,7 @@ class Generator:
         import_methods_calls_function_code = IMPORT_METHOD_CALLS_FUNCTION_TEMPLATE
         import_function_calls_code = ''
 
-        for class_name, attribues in Generator.transformed_concrete_classes.items():
+        for class_name, attribues in Generator.__transformed_concrete_classes.items():
             import_function_call_code = '\n' if import_function_calls_code != '' else ''
             import_function_call_code += IMPORT_METHOD_CALL_TEMPLATE.replace('{{class_name}}', class_name)
             import_function_calls_code += import_function_call_code
@@ -513,12 +563,12 @@ class Generator:
         return import_class_method_pair_code
 
     @staticmethod
-    def __generate_importer_methods() -> str:
+    def __generate_importer_methods() -> None:
         import_methods_code = IMPORT_METHODS_CODE_TEMPLATE
         import_methods_calls_function_code = Generator.__generate_import_methods_calls_function()
 
         import_class_methods_code = ''
-        for class_name, attribues in Generator.transformed_concrete_classes.items():
+        for class_name, attribues in Generator.__transformed_concrete_classes.items():
             importer_method_pair_code = Generator.__generate_importer_methods_pair_for_class(class_name)
             if import_class_methods_code != '':
                 importer_method_pair_code = '\n\n' + importer_method_pair_code
@@ -528,6 +578,7 @@ class Generator:
                                                           import_methods_calls_function_code)
         import_methods_code = import_methods_code.replace('{{import_methods}}', import_class_methods_code)
 
-        return import_methods_code
+        Generator.__import_methods_code = import_methods_code
+        pyperclip.copy(import_methods_code)
 
     # </editor-fold>

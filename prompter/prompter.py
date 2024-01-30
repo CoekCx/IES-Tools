@@ -84,8 +84,24 @@ class Prompter:
         return result
 
     @staticmethod
+    def prompt_user_for_environment_varialbes():
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        namespace = Prompter.prompt_text_question('Environment variables setup', 'What is the namespace?')
+
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        dll_name = Prompter.prompt_text_question('Environment variables setup',
+                                                 'What is the DLL prefix? (____CIMProfile_Labs)')
+
+        return namespace, dll_name
+
+    @staticmethod
     def prompt_numeric_question(title='', message=''):
         questions = [
             inq.Text(title, message=message,
                      validate=lambda _, x: int(x) > 0)]
+        return inq.prompt(questions)
+
+    @staticmethod
+    def prompt_text_question(title='', message=''):
+        questions = [inq.Text(title, message=message)]
         return inq.prompt(questions)

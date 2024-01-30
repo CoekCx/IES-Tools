@@ -8,5 +8,6 @@ enums = {
     'TransformerFunction': ['Supply', 'Consumer', 'Grounding', 'Voltreg', 'Step', 'Generator', 'Transmission',
                             'Interconnection'],
     'WindingConnection': ['Y', 'D', 'Z', 'I', 'Scott', 'OY', 'OD'],
-    'WindingType': ['None', 'Primary', 'Secondary', 'Tertiary']
+    'WindingType': ['None', 'Primary', 'Secondary', 'Tertiary'],
+    'TransformerControlMode': ['reactive', 'volt']
 }

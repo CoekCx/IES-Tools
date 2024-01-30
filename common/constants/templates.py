@@ -52,8 +52,8 @@ REFERENCE_PROPERTY_CODE_TEMPLATE = '''\n\t\t\t\tif (cim{{class_name}}.{{property
 \t\t\t\t\tlong gid = importHelper.GetMappedGID(cim{{class_name}}.{{property_name}}.ID);
 \t\t\t\t\tif (gid < 0)
 \t\t\t\t\t{
-\t\t\t\t\t\treport.Report.Append("WARNING: Convert ").Append(cim{{class_name}}.GetType().ToString()).Append(" rdfID = \"").Append(cim{{class_name}}.ID);
-\t\t\t\t\t\treport.Report.Append("\" - Failed to set reference to {{property_name}}: rdfID \"").Append(cim{{class_name}}.{{property_name}}.ID).AppendLine(" \" is not mapped to GID!");
+\t\t\t\t\t\treport.Report.Append("WARNING: Convert ").Append(cim{{class_name}}.GetType().ToString()).Append(" rdfID = ").Append(cim{{class_name}}.ID);
+\t\t\t\t\t\treport.Report.Append(" - Failed to set reference to {{property_name}}: rdfID ").Append(cim{{class_name}}.{{property_name}}.ID).AppendLine(" is not mapped to GID!");
 \t\t\t\t\t}
 \t\t\t\t\trd.AddProperty(new Property(ModelCode.{{property_model_code}}, gid));
 \t\t\t\t}'''
