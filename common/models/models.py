@@ -1,6 +1,5 @@
 models = {
     'IdentifiedObject': [
-        ('abstract', 'type'),
         ('', 'inheritance'),
         ('gid', 'long'),
         ('mRID', 'string'),
@@ -8,53 +7,45 @@ models = {
         ('name', 'string')
     ],
     'PowerSystemResource': [
-        ('abstract', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('OutageSchedules', 'reflist'),
     ],
     'Equipment': [
-        ('abstract', 'type'),
         ('PowerSystemResource', 'inheritance'),
         ('aggregate', 'bool'),
         ('normallyInService', 'bool'),
     ],
     'ConductingEquipment': [
-        ('abstract', 'type'),
         ('Equipment', 'inheritance'),
         ('Terminals', 'reflist'),
     ],
     'Switch': [
-        ('abstract', 'type'),
         ('ConductingEquipment', 'inheritance'),
+        ('SwitchingOperation', 'ref'),
+        ('SwitchSchedules', 'reflist'),
         ('normalOpen', 'bool'),
         ('retaned', 'bool'),
         ('switchOnCount', 'int'),
         ('switchOnDate', 'datetime'),
         ('ratedCurrent', 'float'),
-        ('SwitchSchedules', 'reflist'),
     ],
     'Disconnector': [
-        ('concrete', 'type'),
         ('Switch', 'inheritance'),
     ],
     'ProtectedSwitch': [
-        ('abstract', 'type'),
         ('Switch', 'inheritance'),
         ('breakingCapacity', 'float'),
         ('SwitchSchedules', 'reflist'),
     ],
     'LoadBreakSwitch': [
-        ('concrete', 'type'),
         ('ProtectedSwitch', 'inheritance'),
         ('RecloseSequences', 'reflist'),
     ],
     'Breaker': [
-        ('concrete', 'type'),
         ('ProtectedSwitch', 'inheritance'),
         ('inTransitTime', 'float'),
     ],
     'BasicIntervalSchedule': [
-        ('abstract', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('startTime', 'datetime'),
         ('value1Multiplier', 'UnitMultiplier'),
@@ -63,25 +54,21 @@ models = {
         ('value2Unit', 'UnitSymbol'),
     ],
     'RegularIntervalSchedule': [
-        ('concrete', 'type'),
         ('BasicIntervalSchedule', 'inheritance'),
         ('RegularTimePoints', 'reflist'),
         ('endTime', 'datetime'),
         ('timeStep', 'float'),
     ],
     'SeasonDayTypeSchedule': [
-        ('abstract', 'type'),
         ('RegularIntervalSchedule', 'inheritance'),
         ('DayType', 'ref'),
         ('Season', 'ref'),
     ],
     'SwitchSchedule': [
-        ('concrete', 'type'),
         ('SeasonDayTypeSchedule', 'inheritance'),
         ('Switch', 'ref'),
     ],
     'RegularTimePoint': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('IntervalSchedule', 'ref'),
         ('sequenceNumber', 'int'),
@@ -89,26 +76,22 @@ models = {
         ('value2', 'float'),
     ],
     'DayType': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('SeasonDayTypeSchedules', 'reflist'),
     ],
     'Season': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('SeasonDayTypeSchedules', 'reflist'),
         ('startData', 'datetime'),
         ('endData', 'datetime'),
     ],
     'RecloseSequence': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('ProtectedSwitch', 'ref'),
         ('recloseDelay', 'float'),
         ('recloseStep', 'int'),
     ],
     'Terminal': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('ConductingEquipment', 'ref'),
         ('ConnectivityNode', 'ref'),
@@ -117,7 +100,6 @@ models = {
         ('sequenceNumber', 'int'),
     ],
     'SeriesCompensator': [
-        ('concrete', 'type'),
         ('ConductingEquipment', 'inheritance'),
         ('r', 'int'),
         ('r0', 'int'),
@@ -125,16 +107,13 @@ models = {
         ('x0', 'int'),
     ],
     'Conductor': [
-        ('abstract', 'type'),
         ('ConductingEquipment', 'inheritance'),
         ('length', 'int'),
     ],
     'DCLineSegment': [
-        ('concrete', 'type'),
         ('Conductor', 'inheritance'),
     ],
     'ACLineSegment': [
-        ('concrete', 'type'),
         ('Conductor', 'inheritance'),
         ('PerLengthImpedance', 'ref'),
         ('b0ch', 'int'),
@@ -147,17 +126,14 @@ models = {
         ('x0', 'int'),
     ],
     'PerLengthImpedance': [
-        ('abstract', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('ACLineSegments', 'reflist'),
     ],
     'PerLengthPhaseImpedance': [
-        ('concrete', 'type'),
         ('PerLengthImpedance', 'inheritance'),
         ('conductorCount', 'int'),
     ],
     'PerLengthSequenceImpedance': [
-        ('concrete', 'type'),
         ('PerLengthImpedance', 'inheritance'),
         ('b0ch', 'int'),
         ('bch', 'int'),
@@ -169,7 +145,6 @@ models = {
         ('x0', 'int'),
     ],
     'PhaseImpedanceData': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('r', 'int'),
         ('b', 'int'),
@@ -177,13 +152,11 @@ models = {
         ('sequenceNumber', 'int'),
     ],
     'ConnectivityNode': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('Terminals', 'reflist'),
         ('description', 'string'),
     ],
     'Point': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('Period', 'ref'),
         ('position', 'int'),
@@ -191,7 +164,6 @@ models = {
         ('quantity', 'float'),
     ],
     'Period': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('MarketDocument', 'ref'),
         ('Points', 'reflist'),
@@ -199,7 +171,6 @@ models = {
         ('duration', 'float'),
     ],
     'Document': [
-        ('abstract', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('createdDateTime', 'datetime'),
         ('lastModifiedDateTime', 'datetime'),
@@ -209,26 +180,22 @@ models = {
         ('type', 'string'),
     ],
     'MarketDocument': [
-        ('concrete', 'type'),
         ('Document', 'inheritance'),
         ('Period', 'reflist'),
         ('Process', 'ref'),
         ('TimeSeriess', 'reflist'),
     ],
     'Process': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('MarketDocuments', 'reflist'),
         ('classificationType', 'string'),
         ('processType', 'string'),
     ],
     'MeasurementPoint': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('TimeSeries', 'ref'),
     ],
     'TimeSeries': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('MarketDocument', 'ref'),
         ('Period', 'ref'),
@@ -238,17 +205,15 @@ models = {
         ('version', 'string'),
     ],
     'IrregularIntervalSchedule': [
-        ('abstract', 'type'),
         ('BasicIntervalSchedule', 'inheritance'),
         ('IrregularTimePoints', 'reflist'),
     ],
     'OutageSchedule': [
-        ('concrete', 'type'),
         ('IrregularIntervalSchedule', 'inheritance'),
         ('PowerSystemResource', 'ref'),
+        ('SwitchingOperations', 'reflist'),
     ],
     'IrregularTimePoint': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('IntervalSchedule', 'ref'),
         ('time', 'float'),
@@ -256,7 +221,6 @@ models = {
         ('value2', 'float'),
     ],
     'CurveData': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('Curve', 'ref'),
         ('xvalue', 'float'),
@@ -265,7 +229,6 @@ models = {
         ('y3value', 'float'),
     ],
     'Curve': [
-        ('concrete', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('CurveDatas', 'reflist'),
         ('curveStyle', 'CurveStyle'),
@@ -279,14 +242,12 @@ models = {
         ('y3Unit', 'UnitSymbol'),
     ],
     'TransformerEnd': [
-        ('abstract', 'type'),
         ('IdentifiedObject', 'inheritance'),
         ('RatioTapChanger', 'ref'),
         ('endNumber', 'int'),
         ('grounded', 'bool'),
     ],
     'PowerTransformerEnd': [
-        ('concrete', 'type'),
         ('TransformerEnd', 'inheritance'),
         ('PowerTransformer', 'ref'),
         ('connectionKind', 'WindingConnection'),
@@ -303,8 +264,8 @@ models = {
         ('x0', 'int'),
     ],
     'TapChanger': [
-        ('abstract', 'type'),
         ('PowerSystemResource', 'inheritance'),
+        ('TapSchedules', 'reflist'),
         ('highStep', 'int'),
         ('initialDelay', 'int'),
         ('lowStep', 'int'),
@@ -316,17 +277,42 @@ models = {
         ('subsequentDelay', 'int'),
     ],
     'RatioTapChanger': [
-        ('concrete', 'type'),
         ('TapChanger', 'inheritance'),
         ('TransformerEnds', 'reflist'),
         ('StepVoltageIncrement', 'int'),
         ('tculControlMode', 'TransformerControlMode'),
     ],
     'PowerTransformer': [
-        ('concrete', 'type'),
         ('ConductingEquipment', 'inheritance'),
         ('PowerTransformerEnds', 'reflist'),
         ('VectorGroup', 'string'),
+    ],
+    'RegulationSchedule': [
+        ('SeasonDayTypeSchedule', 'inheritance'),
+        ('RegulatingControl', 'ref'),
+    ],
+    'RegulatingControl': [
+        ('PowerSystemResource', 'inheritance'),
+        ('RegulationSchedules', 'reflist'),
+        ('discrete', 'bool'),
+        ('mode', 'RegulatingControlModeKind'),
+        ('monitoredPhase', 'PhaseCode'),
+        ('targetRange', 'float'),
+        ('targetValue', 'float'),
+    ],
+    'TapSchedule': [
+        ('SeasonDayTypeSchedule', 'inheritance'),
+        ('TapChanger', 'ref'),
+    ],
+    'SwitchingOperation': [
+        ('IdentifiedObject', 'inheritance'),
+        ('OutageSchedule', 'ref'),
+        ('Switches', 'reflist'),
+        ('newState', 'SwitchState'),
+        ('operationTime', 'datetime'),
+    ],
+    'GroundDisconnector': [
+        ('Switch', 'inheritance'),
     ],
 }
 

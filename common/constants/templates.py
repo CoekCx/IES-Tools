@@ -103,12 +103,12 @@ IMPORT_CLASS_METHOD_PAIR = '''{{import_method}}
 
 IMPORT_CLASS_METHOD_TEMPLATE = '''\t\tprivate void Import{{class_name}}()
 \t\t{
-\t\t\tSortedDictionary<string, object> cim{{class_name}}es = concreteModel.GetAllObjectsOfType("FTNProject.{{class_name}}");
+\t\t\tSortedDictionary<string, object> cim{{class_name}}es = concreteModel.GetAllObjectsOfType("{{namespace}}.{{class_name}}");
 \t\t\tif (cim{{class_name}}es != null)
 \t\t\t{
 \t\t\t\tforeach (KeyValuePair<string, object> cim{{class_name}}Pair in cim{{class_name}}es)
 \t\t\t\t{
-\t\t\t\t\tFTNProject.{{class_name}} cim{{class_name}} = cim{{class_name}}Pair.Value as FTNProject.{{class_name}};
+\t\t\t\t\t{{namespace}}.{{class_name}} cim{{class_name}} = cim{{class_name}}Pair.Value as {{namespace}}.{{class_name}};
 
 \t\t\t\t\tResourceDescription rd = Create{{class_name}}Description(cim{{class_name}});
 \t\t\t\t\tif (rd != null)
@@ -125,7 +125,7 @@ IMPORT_CLASS_METHOD_TEMPLATE = '''\t\tprivate void Import{{class_name}}()
 \t\t\t}
 \t\t}'''
 
-CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE = '''\t\tprivate ResourceDescription Create{{class_name}}Description(FTNProject.{{class_name}} cim{{class_name}})
+CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE = '''\t\tprivate ResourceDescription Create{{class_name}}Description({{namespace}}.{{class_name}} cim{{class_name}})
 \t\t{
 \t\t\tResourceDescription rd = null;
 \t\t\tif (cim{{class_name}} != null)

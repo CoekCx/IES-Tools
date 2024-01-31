@@ -9,5 +9,8 @@ enums = {
                             'Interconnection'],
     'WindingConnection': ['Y', 'D', 'Z', 'I', 'Scott', 'OY', 'OD'],
     'WindingType': ['None', 'Primary', 'Secondary', 'Tertiary'],
-    'TransformerControlMode': ['reactive', 'volt']
+    'TransformerControlMode': ['reactive', 'volt'],
+    'RegulatingControlModeKind': ['Voltage', 'ActivePower', 'ReactivePower', 'CurrentFlow', 'Fixed', 'Admittance',
+                                  'TimeSchedule', 'Temperature', 'PowerFactor'],
+    'SwitchState': ['open', 'closed']
 }

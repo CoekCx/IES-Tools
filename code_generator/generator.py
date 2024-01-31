@@ -1,5 +1,6 @@
 import os
 import string
+import sys
 from datetime import datetime, timedelta
 from random import randint, uniform, choice, sample
 
@@ -18,7 +19,7 @@ from common.enums.enums import enums
 from common.models.concrete_class_data_point import ConcreteClassDataPoint
 from common.models.dms_type import DMSType
 from common.models.model_code import ModelCode
-from common.models.models import transform_properties
+from common.models.models import transform_properties, transformed_models
 from prompter.prompter import Prompter
 
 
@@ -73,7 +74,9 @@ class Generator:
 
         if specification_answer['enter_specifications']:
             # If the user wants to enter specifications, call the method
+            Generator.__get_environment_variables()
             Generator.__get_project_specifications()
+            Generator.__detect_project_enums()
         else:
             Generator.__namespace = 'FTN1'
             Generator.__dll_file_prefix = 'classes'
@@ -107,6 +110,7 @@ class Generator:
             if choice == 'Set Project Specification':
                 Generator.__get_environment_variables()
                 Generator.__get_project_specifications()
+                Generator.__detect_project_enums()
             elif choice == 'Generate XML data':
                 Generator.__generate_xml_data()
             elif choice == 'Generate Model Defines':
@@ -166,8 +170,15 @@ class Generator:
         Generator.__transformed_project_specification = transform_properties(Generator.__project_specification)
         concrete_classes = {class_name: class_attribues for class_name, class_attribues in
                             Generator.__project_specification.items() if
-                            class_attribues[1][0] == 'concrete'}
+                            class_attribues[0][0] == 'concrete'}
         Generator.__transformed_concrete_classes = transform_properties(concrete_classes)
+
+    @staticmethod
+    def __detect_project_enums():
+        for class_name, class_attr in Generator.__transformed_concrete_classes.items():
+            class_properties = Generator.__get_all_class_properties(class_name)
+            concrete_data_point = ConcreteClassDataPoint(randint(10 ** 9, (10 ** 10) - 1), class_name)
+            Generator.__generate_class_properties_data(class_properties, concrete_data_point.id)
 
     # </editor-fold>
 
@@ -180,9 +191,8 @@ class Generator:
 
         # Populate the tree based on the inheritance relationships
         for class_name, properties in Generator.__project_specification.items():
-            inheritance = [prop[0] for prop in properties if prop[1] == 'inheritance' and prop[1][1] != '']
-            if inheritance:
-                parent_class = inheritance[0]
+            parent_class = transformed_models[class_name]['inheritance']
+            if parent_class != '':
                 if parent_class not in inheritance_tree:
                     inheritance_tree[parent_class] = []
                 inheritance_tree[parent_class].append(class_name)
@@ -554,9 +564,11 @@ class Generator:
     @staticmethod
     def __generate_importer_methods_pair_for_class(class_name: str) -> str:
         import_class_method_pair_code = IMPORT_CLASS_METHOD_PAIR
-        import_class_method_code = IMPORT_CLASS_METHOD_TEMPLATE.replace('{{class_name}}', class_name)
+        import_class_method_code = IMPORT_CLASS_METHOD_TEMPLATE.replace('{{class_name}}', class_name) \
+            .replace('{{namespace}}', Generator.__namespace)
         create_class_descriptio_method_code = CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE \
-            .replace('{{class_name}}', class_name).replace('{{model_code_name}}', class_name.upper())
+            .replace('{{class_name}}', class_name).replace('{{model_code_name}}', class_name.upper()) \
+            .replace('{{namespace}}', Generator.__namespace)
         import_class_method_pair_code = import_class_method_pair_code \
             .replace('{{import_method}}', import_class_method_code) \
             .replace('{{create_description_method}}', create_class_descriptio_method_code)

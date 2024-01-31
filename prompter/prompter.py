@@ -41,16 +41,37 @@ class Prompter:
         return user_classes
 
     @staticmethod
+    def __get_parent_classes_names(class_name: str, parent_classes: list = None) -> list:
+        if not parent_classes:
+            parent_classes = []
+
+        parent_class_name = data.transformed_models[class_name]['inheritance']
+        if parent_class_name != '':
+            parent_classes.append(parent_class_name)
+            Prompter.__get_parent_classes_names(parent_class_name, parent_classes)
+
+        parent_classes = parent_classes[::-1]  # reverse list
+        return parent_classes
+
+    @staticmethod
     def prompt_user_for_project_specification():
         os.system('cls' if os.name in ('nt', 'dos') else 'clear')
-        classes = Prompter.prompt_user_for_classes()
+        concrete_classes = Prompter.prompt_user_for_classes()
 
         os.system('cls' if os.name in ('nt', 'dos') else 'clear')
         print("\033[1;1H")
 
+        all_classes = []
+        for class_name in concrete_classes:
+            parent_classes = Prompter.__get_parent_classes_names(class_name)
+            for parent_class_name in parent_classes:
+                if parent_class_name not in all_classes:
+                    all_classes.append(parent_class_name)
+            all_classes.append(class_name)
+
         result = {}
 
-        for user_class in tqdm(classes, desc='Processing', unit='class', file=sys.stdout):
+        for user_class in tqdm(all_classes, desc='Processing', unit='class', file=sys.stdout):
             # Get properties excluding 'inheritance' and 'type'
             properties = [(attr, data_type) for attr, data_type in data.models[user_class] if
                           data_type not in ['inheritance', 'type']]
@@ -72,12 +93,25 @@ class Prompter:
                 # Save selected properties in the result
                 result[user_class] = [(attr, data_type) for selected_property in answers['selected_properties'] for
                                       attr, data_type in properties if selected_property.startswith(attr)]
-            for attr, data_type in data.models[user_class]:
-                if data_type in ['inheritance', 'type']:
-                    if user_class in result:
-                        result[user_class].insert(0, (attr, data_type))
-                    else:
-                        result[user_class] = [(attr, data_type)]
+            if user_class in concrete_classes:
+                if user_class in result:
+                    result[user_class].insert(0, ('concrete', 'type'))
+                    result[user_class].insert(1,
+                                              (data.transformed_models[user_class]['inheritance'], 'inheritance'))
+                else:
+                    result[user_class] = [('concrete', 'type')]
+                    result[user_class].insert(1,
+                                              (data.transformed_models[user_class]['inheritance'], 'inheritance'))
+            else:
+                if user_class in result:
+                    result[user_class].insert(0, ('abstract', 'type'))
+                    result[user_class].insert(1,
+                                              (data.transformed_models[user_class]['inheritance'], 'inheritance'))
+                else:
+                    result[user_class] = [('abstract', 'type')]
+                    result[user_class].insert(1,
+                                              (data.transformed_models[user_class]['inheritance'], 'inheritance'))
+
             os.system('cls' if os.name in ('nt', 'dos') else 'clear')
             print("\033[1;1H")
 
@@ -92,7 +126,7 @@ class Prompter:
         dll_name = Prompter.prompt_text_question('Environment variables setup',
                                                  'What is the DLL prefix? (____CIMProfile_Labs)')
 
-        return namespace, dll_name
+        return namespace['Environment variables setup'], dll_name['Environment variables setup']
 
     @staticmethod
     def prompt_numeric_question(title='', message=''):
