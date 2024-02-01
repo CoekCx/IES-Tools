@@ -14,7 +14,7 @@ from common.constants.templates import XML_FILE_TEMPLATE, POPULATE_CLASS_PROPERT
     ENUM_PROPERTY_CODE_TEMPLATE, CONVERTER_METHODS_CODE_TEMPLATE, GET_DMS_ENUM_METHOD_TEMPLATE, \
     GET_DMS_ENUM_CASE_TEMPLATE, IMPORT_METHODS_CODE_TEMPLATE, IMPORT_METHOD_CALLS_FUNCTION_TEMPLATE, \
     IMPORT_METHOD_CALL_TEMPLATE, IMPORT_CLASS_METHOD_TEMPLATE, IMPORT_CLASS_METHOD_PAIR, \
-    CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE
+    CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE, ENUM_CODE_TEMPLATE, ENUM_OPTION_TEMPLATE
 from common.enums.enums import enums
 from common.models.concrete_class_data_point import ConcreteClassDataPoint
 from common.models.dms_type import DMSType
@@ -53,6 +53,7 @@ class Generator:
     __class_model_codes = []
     __model_codes_code = ''
     __model_defines_code = ''
+    __enums_code = ''
     __xml_data_code = ''
     __converter_methods_code = ''
     __import_methods_code = ''
@@ -95,6 +96,7 @@ class Generator:
                     'choices': [
                         'Set Project Specification',
                         'Generate Model Defines',
+                        'Generate Enumes',
                         'Generate XML data',
                         'Generate Converter Methods',
                         'Generate Importer Methods',
@@ -111,10 +113,12 @@ class Generator:
                 Generator.__get_environment_variables()
                 Generator.__get_project_specifications()
                 Generator.__detect_project_enums()
-            elif choice == 'Generate XML data':
-                Generator.__generate_xml_data()
             elif choice == 'Generate Model Defines':
                 Generator.__generate_model_defines()
+            elif choice == 'Generate Enumes':
+                Generator.__generate_enums()
+            elif choice == 'Generate XML data':
+                Generator.__generate_xml_data()
             elif choice == 'Generate Converter Methods':
                 Generator.__generate_converter_methods()
             elif choice == 'Generate Importer Methods':
@@ -239,7 +243,7 @@ class Generator:
             if properties.__contains__(('concrete', 'type')):
                 new_dms_type = DMSType(class_name, concrete_class_counter)
                 dms_types.append(new_dms_type)
-                dms_types_code_body += f'\n\t\t{new_dms_type.__str__()}'
+                dms_types_code_body += f'\n\t\t{new_dms_type.__str__()},'
                 concrete_class_counter += 1
 
         dms_types_code = dms_types_code.replace('{{dms_types}}', dms_types_code_body)
@@ -285,6 +289,32 @@ class Generator:
         Generator.__model_codes_code = model_codes_code
         Generator.__model_defines_code = f'{Generator.__dms_types_code}\n\n{Generator.__model_codes_code}'
         pyperclip.copy(Generator.__model_defines_code)
+
+    # </editor-fold>
+
+    # <editor-fold desc="MODEL ENUMES">
+
+    @staticmethod
+    def __generate_enums() -> None:
+        enums_code = ''
+        for enum_name in Generator.__project_enums:
+            if enums_code != '':
+                enums_code += '\n\n'
+
+            enum_code = ENUM_CODE_TEMPLATE.replace('{{enum_name}}', enum_name)
+            enum_options = ''
+            options_counter = 0
+            for option in enums[enum_name]:
+                if enum_options != '':
+                    enum_options += '\n'
+
+                enum_options += ENUM_OPTION_TEMPLATE \
+                    .replace('{{option_name}}', option).replace('{{index}}', str(options_counter))
+                options_counter += 1
+            enum_code = enum_code.replace('{{options}}', enum_options)
+            enums_code += enum_code
+        Generator.__enums_code = enums_code
+        pyperclip.copy(Generator.__enums_code)
 
     # </editor-fold>
 
@@ -390,6 +420,7 @@ class Generator:
 
     @staticmethod
     def __generate_xml_data() -> None:
+        Generator.__concrete_classes_ids = {}
         data_points_count = int(
             Prompter.prompt_numeric_question('Concrete data generation', 'How many data points do you want per class')[
                 'Concrete data generation'])
@@ -437,7 +468,7 @@ class Generator:
 
         for attr, type_ in class_attributes.items():
             attr_model_code = f'{class_name.upper()}_{attr.upper()}'
-            capitalized_attr = attr.capitalize() if attr != 'mRID' else attr.upper()
+            capitalized_attr = attr[0].upper() + attr[1:] if attr != 'mRID' else attr.upper()
             if type_ in ['int', 'float', 'double', 'string', 'bool', 'datetime']:
                 properties_code += PROPERTY_CODE_TEMPLATE.replace('{{class_name}}', class_name) \
                     .replace('{{property_name}}', capitalized_attr).replace('{{property_model_code}}',
@@ -569,6 +600,9 @@ class Generator:
         create_class_descriptio_method_code = CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE \
             .replace('{{class_name}}', class_name).replace('{{model_code_name}}', class_name.upper()) \
             .replace('{{namespace}}', Generator.__namespace)
+        create_class_descriptio_method_code = create_class_descriptio_method_code.replace(
+            '{{reference_parameters}}',
+            INHERITANCE_REFERENCE_PARAMETERS if Generator.__class_has_ref(class_name) else '')
         import_class_method_pair_code = import_class_method_pair_code \
             .replace('{{import_method}}', import_class_method_code) \
             .replace('{{create_description_method}}', create_class_descriptio_method_code)

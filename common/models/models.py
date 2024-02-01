@@ -24,7 +24,7 @@ models = {
         ('SwitchingOperation', 'ref'),
         ('SwitchSchedules', 'reflist'),
         ('normalOpen', 'bool'),
-        ('retaned', 'bool'),
+        ('retained', 'bool'),
         ('switchOnCount', 'int'),
         ('switchOnDate', 'datetime'),
         ('ratedCurrent', 'float'),
