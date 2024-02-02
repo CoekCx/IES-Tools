@@ -155,28 +155,6 @@ CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE = '''\t\tprivate ResourceDescription Cr
 
 # <editor-fold desc="SERVER CLASSES">
 
-SERVER_CLASS_TEMPLATE = '''using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Xml;
-using FTN.Common;
-
-namespace FTN.Services.NetworkModelService.DataModel.Classes
-{
-\tpublic class {{class_name}} : {{parent_class_name}}
-\t{		
-{{properties}}
-\t\tpublic {{class_name}}(long globalId) : base(globalId) 
-\t\t{
-\t\t}
-{{IAccess_implementation}}
-{{IReference_implementation}}
-\t}
-}'''
-
 IDENTIFIED_OBJECT_CLASS_CODE = '''using System;
 using System.Collections.Generic;
 using System.IO;
@@ -207,7 +185,7 @@ namespace FTN.Services.NetworkModelService.DataModel.Classes
 		/// Global id of the identified object (SystemId - 4 nibls, DMSType - 4 nibls, FragmentId - 8 nibls)
 		/// </summary>
 		private long globalId;
-		
+
 		/// <summary>
 		/// Name of identified object
 		/// </summary>		
@@ -222,7 +200,7 @@ namespace FTN.Services.NetworkModelService.DataModel.Classes
 		/// Description of identified object
 		/// </summary>		
 		private string aliasName = string.Empty;
-		
+
 		/// <summary>
 		/// Initializes a new instance of the IdentifiedObject class.
 		/// </summary>		
@@ -316,7 +294,7 @@ namespace FTN.Services.NetworkModelService.DataModel.Classes
 						(io.aliasName == this.aliasName));
 			}
 		}
-		
+
 		public override int GetHashCode()
 		{
 			return base.GetHashCode();
@@ -358,7 +336,7 @@ namespace FTN.Services.NetworkModelService.DataModel.Classes
                 case ModelCode.IDOBJ_ALIASNAME:
                     property.SetValue(aliasName);
                     break;
-			
+
 				default:
 					string message = string.Format("Unknown property id = {0} for entity (GID = 0x{1:x16}).", property.Id.ToString(), this.GlobalId);
 					CommonTrace.WriteTrace(CommonTrace.TraceError, message);
@@ -400,7 +378,7 @@ namespace FTN.Services.NetworkModelService.DataModel.Classes
 				return false;
 			}
 		}
-			
+
 		public virtual void GetReferences(Dictionary<ModelCode, List<long>> references, TypeOfReference refType)
 		{
 			return;
@@ -498,5 +476,188 @@ namespace FTN.Services.NetworkModelService.DataModel.Classes
 	}
 }
 '''
+
+SERVER_CLASS_TEMPLATE = '''using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Xml;
+using FTN.Common;
+
+namespace FTN.Services.NetworkModelService.DataModel.Classes
+{
+\tpublic class {{class_name}} : {{parent_class_name}}
+\t{{{properties}}
+\t\tpublic {{class_name}}(long globalId) : base(globalId) 
+\t\t{
+\t\t}
+{{iaccess_implementation}}
+{{ireference_implementation}}
+\t}
+}'''
+
+SERVER_ENUM_TEMPLATE = '''using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace FTN.Services.NetworkModelService.DataModel.Classes
+{
+\tpublic enum {{enum_name}}
+\t{
+{{enum_values}}
+\t}
+}'''
+
+SERVER_CLASS_PROPERTY_TEMPLATE = '''\t\tpublic {{prop_type}} {{prop_name}} { get; set; }'''
+
+SERVER_CLASS_REFLIST_PROPERTY_TEMPLATE = '''\t\tpublic List<long> {{prop_name}} { get; set; } = new List<long>();'''
+
+# <editor-fold desc="IACCESS">
+
+IACCESS_IMPLEMENTATION_CODE_TEMPLATE = '''
+\t\t#region IAccess implementation
+
+{{has_property_code}}
+
+{{get_property_code}}
+
+{{set_property_code}}
+
+\t\t#endregion IAccess implementation'''
+
+HAS_PROPERTY_CODE_TEMPLATE = '''\t\tpublic override bool HasProperty(ModelCode property)
+\t\t{
+\t\t\tswitch(property)
+\t\t\t{{{cases_code}}
+\t\t\t\tdefault:
+\t\t\t\t\treturn base.HasProperty(property);
+\t\t\t}
+\t\t}'''
+
+HAS_PROPERTY_CASES_CODE_TEMPLATE = '''
+{{cases_code}}
+\t\t\t\t\treturn true;
+'''
+
+HAS_PROPERTY_CASE_CODE_TEMPLATE = '''\t\t\t\tcase ModelCode.{{prop_model_code}}:'''
+
+GET_PROPERTY_CODE_TEMPLATE = '''\t\tpublic override void GetProperty(Property property)
+\t\t{
+\t\t\tswitch(property.Id)
+\t\t\t{{{cases_code}}
+\t\t\t\tdefault:
+\t\t\t\t\tbase.GetProperty(property);
+\t\t\t\t\tbreak;
+\t\t\t}
+\t\t}'''
+
+GET_PROPERTY_CASE_CODE_TEMPLATE = '''\t\t\t\tcase ModelCode.{{prop_model_code}}:
+\t\t\t\t\tproperty.SetValue({{prop_name}});
+\t\t\t\t\tbreak;'''
+
+SET_PROPERTY_CODE_TEMPLATE = '''\t\tpublic override void SetProperty(Property property)
+\t\t{
+\t\t\tswitch(property.Id)
+\t\t\t{{{cases_code}}
+\t\t\t\tdefault:
+\t\t\t\t\tbase.SetProperty(property);
+\t\t\t\t\tbreak;
+\t\t\t}
+\t\t}'''
+
+SET_PROPERTY_CASE_CODE_TEMPLATE = '''\t\t\t\tcase ModelCode.{{prop_model_code}}:
+\t\t\t\t\t{{prop_name}} = property.As{{prop_type}}();
+\t\t\t\t\tbreak;'''
+
+SET_PROPERTY_ENUM_CASE_CODE_TEMPLATE = '''\t\t\t\tcase ModelCode.{{prop_model_code}}:
+\t\t\t\t\t{{prop_name}} = ({{enum_name}})property.AsEnum();
+\t\t\t\t\tbreak;'''
+
+# </editor-fold>
+
+# <editor-fold desc="IREFERENCE">
+
+IREFERENCE_IMPLEMENTATION_CODE_TEMPLATE = '''
+\t\t#region IReference implementation
+{{is_referenced_code}}{{get_references_code}}{{add_reference_code}}{{remove_reference_code}}
+\t\t#endregion IAccess implementation'''
+
+IS_REFERENCED_CODE_TEMPLATE = '''
+\t\tpublic override bool IsReferenced
+\t\t{
+\t\t\tget
+\t\t\t{
+\t\t\t\treturn ({{is_referenced_inner_code}}) || base.IsReferenced;
+\t\t\t}
+\t\t}
+'''
+
+IS_REFERENCED_INNER_CODE_TEMPLATE = '''{{prop_name}}.Count > 0'''
+
+GET_REFERENCES_CODE_TEMPLATE = '''
+\t\tpublic override void GetReferences(Dictionary<ModelCode, List<long>> references, TypeOfReference refType)
+\t\t{
+{{reference_codes}}
+
+\t\t	base.GetReferences(references, refType);
+\t\t}
+'''
+
+GET_REFERENCES_REFERENCE_CODE_TEMPLATE = '''
+\t\t\tif ({{prop_name}} != 0 && (refType == TypeOfReference.Reference || refType == TypeOfReference.Both))
+\t\t\t{
+\t\t\t\treferences[ModelCode.{{prop_model_code_name}}] = new List<long>();
+\t\t\t\treferences[ModelCode.{{prop_model_code_name}}].Add({{prop_name}});
+\t\t\t}'''
+
+ADD_REFERENCE_CODE_TEMPLATE = '''
+\t\tpublic override void AddReference(ModelCode referenceId, long globalId)
+\t\t{
+\t\t\tswitch (referenceId)
+\t\t\t{
+{{cases_code}}
+
+\t\t\t\tdefault:
+\t\t\t\t\tbase.AddReference(referenceId, globalId);
+\t\t\t\t\tbreak;
+\t\t\t}
+\t\t}
+'''
+
+ADD_REFERENCE_CASE_CODE_TEMPLATE = '''\t\t\t\tcase ModelCode.{{prop_model_code_name}}:
+\t\t\t\t\t{{prop_name}}.Add(globalId);
+\t\t\t\t\tbreak;'''
+
+REMOVE_REFERENCE_CODE_TEMPLATE = '''
+\t\tpublic override void RemoveReference(ModelCode referenceId, long globalId)
+\t\t{
+\t\t\tswitch (referenceId)
+\t\t\t{
+{{cases_code}}
+
+\t\t\t	default:
+\t\t\t		base.RemoveReference(referenceId, globalId);
+\t\t\t		break;
+\t\t\t}
+\t\t}
+'''
+
+REMOVE_REFERENCE_CASE_CODE_TEMPLATE = '''\t\t\t\tcase ModelCode.{{prop_model_code_name}}:
+
+\t\t\t\t\tif ({{prop_name}}.Contains(globalId))
+\t\t\t\t\t{
+\t\t\t\t\t\t{{prop_name}}.Remove(globalId);
+\t\t\t\t\t}
+\t\t\t\t\telse
+\t\t\t\t\t{
+\t\t\t\t\t\tCommonTrace.WriteTrace(CommonTrace.TraceWarning, "Entity (GID = 0x{0:x16}) doesn't contain reference 0x{1:x16}.", this.GlobalId, globalId);
+\t\t\t\t\t}
+
+\t\t\t\t\tbreak;'''
+
+# </editor-fold>
 
 # </editor-fold>

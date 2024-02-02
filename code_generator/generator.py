@@ -7,14 +7,7 @@ from random import randint, uniform, choice, sample
 import pyperclip
 from inquirer2 import prompt as pmt
 
-from common.constants.templates import XML_FILE_TEMPLATE, POPULATE_CLASS_PROPERTIES_METHOD_TEMPLATE, \
-    REFERENCE_PARAMETERS_TEMPLATE, \
-    INHERITANCE_METHOD_CALL_TEMPLATE, INHERITANCE_REFERENCE_PARAMETERS, PROPERTY_CODE_TEMPLATE, \
-    REFERENCE_PROPERTY_CODE_TEMPLATE, \
-    ENUM_PROPERTY_CODE_TEMPLATE, CONVERTER_METHODS_CODE_TEMPLATE, GET_DMS_ENUM_METHOD_TEMPLATE, \
-    GET_DMS_ENUM_CASE_TEMPLATE, IMPORT_METHODS_CODE_TEMPLATE, IMPORT_METHOD_CALLS_FUNCTION_TEMPLATE, \
-    IMPORT_METHOD_CALL_TEMPLATE, IMPORT_CLASS_METHOD_TEMPLATE, IMPORT_CLASS_METHOD_PAIR, \
-    CREATE_CLASS_DESCRIPTION_METHOD_TEMPLATE, ENUM_CODE_TEMPLATE, ENUM_OPTION_TEMPLATE
+from common.constants.templates import *
 from common.enums.enums import enums
 from common.models.concrete_class_data_point import ConcreteClassDataPoint
 from common.models.dms_type import DMSType
@@ -24,11 +17,11 @@ from prompter.prompter import Prompter
 
 
 class Generator:
-    __project_specification = {}
-    __transformed_project_specification = {}
-    __transformed_concrete_classes = {}
-    __concrete_classes_ids = {}
-    __project_enums = []
+    project_specification = {}
+    transformed_project_specification = {}
+    transformed_concrete_classes = {}
+    concrete_classes_ids = {}
+    project_enums = []
     __type_mapping = {
         'bool': '01',
         'int': '03',
@@ -57,6 +50,7 @@ class Generator:
     __xml_data_code = ''
     __converter_methods_code = ''
     __import_methods_code = ''
+    server_classes_codes = {}
 
     @staticmethod
     def start_app() -> None:
@@ -83,6 +77,7 @@ class Generator:
             Generator.__dll_file_prefix = 'classes'
             Generator.__get_project_specifications(True)
 
+        Generator.__generate_xml_data(1)  # need to call this so that we can scan all the project enums
         Generator.__main_menu()
 
     @staticmethod
@@ -100,6 +95,8 @@ class Generator:
                         'Generate XML data',
                         'Generate Converter Methods',
                         'Generate Importer Methods',
+                        'Generate Server Classes',
+                        'Generate Server Enum Classes',
                     ],
                 },
             ]
@@ -123,6 +120,10 @@ class Generator:
                 Generator.__generate_converter_methods()
             elif choice == 'Generate Importer Methods':
                 Generator.__generate_importer_methods()
+            elif choice == 'Generate Server Classes':
+                Generator.__generate_server_classes()
+            elif choice == 'Generate Server Enum Classes':
+                Generator.__generate_server_enums()
 
     # <editor-fold desc="PROJECT SETUP">
 
@@ -133,53 +134,49 @@ class Generator:
     @staticmethod
     def __get_project_specifications(autoset: bool = False) -> None:
         if autoset:
-            Generator.__project_specification = {
-                'IdentifiedObject': [('', 'inheritance'), ('abstract', 'type'), ('gid', 'long'), ('mRID', 'string'),
+            Generator.project_specification = {
+                'IdentifiedObject': [('abstract', 'type'), ('', 'inheritance'), ('gid', 'long'), ('mRID', 'string'),
                                      ('aliasName', 'string'), ('name', 'string')],
-                'Curve': [('IdentifiedObject', 'inheritance'), ('concrete', 'type'), ('CurveDatas', 'reflist'),
-                          ('curveStyle', 'CurveStyle'), ('xMultiplier', 'UnitMultiplier'), ('xUnit', 'UnitSymbol'),
-                          ('y1Multiplier', 'UnitMultiplier'), ('y1Unit', 'UnitSymbol'),
-                          ('y2Multiplier', 'UnitMultiplier'), ('y2Unit', 'UnitSymbol'),
-                          ('y3Multiplier', 'UnitMultiplier'), ('y3Unit', 'UnitSymbol')],
-                'CurveData': [('IdentifiedObject', 'inheritance'), ('concrete', 'type'), ('Curve', 'ref'),
-                              ('xvalue', 'float'), ('y1value', 'float'), ('y2value', 'float'), ('y3value', 'float')],
-                'PowerSystemResource': [('IdentifiedObject', 'inheritance'), ('abstract', 'type'),
-                                        ('OutageSchedules', 'reflist')],
-                'Equipment': [('PowerSystemResource', 'inheritance'), ('abstract', 'type'), ('aggregate', 'bool'),
+                'PowerSystemResource': [('abstract', 'type'), ('IdentifiedObject', 'inheritance')],
+                'Equipment': [('abstract', 'type'), ('PowerSystemResource', 'inheritance'), ('aggregate', 'bool'),
                               ('normallyInService', 'bool')],
-                'ConductingEquipment': [('Equipment', 'inheritance'), ('abstract', 'type')],
-                'Switch': [('ConductingEquipment', 'inheritance'), ('abstract', 'type'), ('normalOpen', 'bool'),
-                           ('retaned', 'bool'), ('switchOnCount', 'int'), ('switchOnDate', 'datetime'),
-                           ('ratedCurrent', 'float'), ('SwitchSchedules', 'reflist')],
-                'Disconnector': [('Switch', 'inheritance'), ('concrete', 'type')],
-                'BasicIntervalSchedule': [('IdentifiedObject', 'inheritance'), ('abstract', 'type'),
+                'ConductingEquipment': [('abstract', 'type'), ('Equipment', 'inheritance')],
+                'Switch': [('concrete', 'type'), ('ConductingEquipment', 'inheritance'), ('normalOpen', 'bool'),
+                           ('retained', 'bool'), ('switchOnCount', 'int'), ('switchOnDate', 'datetime'),
+                           ('ratedCurrent', 'float')],
+                'RegulatingControl': [('concrete', 'type'), ('PowerSystemResource', 'inheritance'),
+                                      ('RegulationSchedules', 'reflist'), ('discrete', 'bool'),
+                                      ('mode', 'RegulatingControlModeKind'), ('monitoredPhase', 'PhaseCode'),
+                                      ('targetRange', 'float'), ('targetValue', 'float')],
+                'TapChanger': [('concrete', 'type'), ('PowerSystemResource', 'inheritance'),
+                               ('TapSchedules', 'reflist')],
+                'DayType': [('concrete', 'type'), ('IdentifiedObject', 'inheritance'),
+                            ('SeasonDayTypeSchedules', 'reflist')],
+                'BasicIntervalSchedule': [('abstract', 'type'), ('IdentifiedObject', 'inheritance'),
                                           ('startTime', 'datetime'), ('value1Multiplier', 'UnitMultiplier'),
                                           ('value1Unit', 'UnitSymbol'), ('value2Multiplier', 'UnitMultiplier'),
                                           ('value2Unit', 'UnitSymbol')],
-                'IrregularIntervalSchedule': [('BasicIntervalSchedule', 'inheritance'), ('abstract', 'type'),
-                                              ('IrregularTimePoints', 'reflist')],
-                'OutageSchedule': [('IrregularIntervalSchedule', 'inheritance'), ('concrete', 'type'),
-                                   ('PowerSystemResource', 'ref')],
-                'RegularIntervalSchedule': [('BasicIntervalSchedule', 'inheritance'), ('concrete', 'type'),
-                                            ('RegularTimePoints', 'reflist'), ('endTime', 'datetime'),
-                                            ('timeStep', 'float')],
-                'IrregularTimePoint': [('IdentifiedObject', 'inheritance'), ('concrete', 'type'),
-                                       ('IntervalSchedule', 'ref'), ('time', 'float'), ('value1', 'float'),
-                                       ('value2', 'float')],
-                'RegularTimePoint': [('IdentifiedObject', 'inheritance'), ('concrete', 'type'),
+                'RegularIntervalSchedule': [('abstract', 'type'), ('BasicIntervalSchedule', 'inheritance'),
+                                            ('RegularTimePoints', 'reflist')],
+                'SeasonDayTypeSchedule': [('abstract', 'type'), ('RegularIntervalSchedule', 'inheritance'),
+                                          ('DayType', 'ref')],
+                'RegulationSchedule': [('concrete', 'type'), ('SeasonDayTypeSchedule', 'inheritance'),
+                                       ('RegulatingControl', 'ref')],
+                'TapSchedule': [('concrete', 'type'), ('SeasonDayTypeSchedule', 'inheritance'), ('TapChanger', 'ref')],
+                'RegularTimePoint': [('concrete', 'type'), ('IdentifiedObject', 'inheritance'),
                                      ('IntervalSchedule', 'ref'), ('sequenceNumber', 'int'), ('value1', 'float'),
                                      ('value2', 'float')]}
         else:
-            Generator.__project_specification = Prompter.prompt_user_for_project_specification()
-        Generator.__transformed_project_specification = transform_properties(Generator.__project_specification)
+            Generator.project_specification = Prompter.prompt_user_for_project_specification()
+        Generator.transformed_project_specification = transform_properties(Generator.project_specification)
         concrete_classes = {class_name: class_attribues for class_name, class_attribues in
-                            Generator.__project_specification.items() if
+                            Generator.project_specification.items() if
                             class_attribues[0][0] == 'concrete'}
-        Generator.__transformed_concrete_classes = transform_properties(concrete_classes)
+        Generator.transformed_concrete_classes = transform_properties(concrete_classes)
 
     @staticmethod
     def __detect_project_enums():
-        for class_name, class_attr in Generator.__transformed_concrete_classes.items():
+        for class_name, class_attr in Generator.transformed_concrete_classes.items():
             class_properties = Generator.__get_all_class_properties(class_name)
             concrete_data_point = ConcreteClassDataPoint(randint(10 ** 9, (10 ** 10) - 1), class_name)
             Generator.__generate_class_properties_data(class_properties, concrete_data_point.id)
@@ -194,7 +191,7 @@ class Generator:
         inheritance_tree = {}
 
         # Populate the tree based on the inheritance relationships
-        for class_name, properties in Generator.__project_specification.items():
+        for class_name, properties in Generator.project_specification.items():
             parent_class = transformed_models[class_name]['inheritance']
             if parent_class != '':
                 if parent_class not in inheritance_tree:
@@ -239,7 +236,7 @@ class Generator:
         dms_types = []
         concrete_class_counter = 1
 
-        for class_name, properties in Generator.__project_specification.items():
+        for class_name, properties in Generator.project_specification.items():
             if properties.__contains__(('concrete', 'type')):
                 new_dms_type = DMSType(class_name, concrete_class_counter)
                 dms_types.append(new_dms_type)
@@ -259,7 +256,7 @@ class Generator:
         dms_types = Generator.__generate_dms_types()
         class_inheritances = Generator.__generate_class_inheritance_values()
 
-        for class_name, properties in Generator.__project_specification.items():
+        for class_name, properties in Generator.project_specification.items():
             if dms_types.__contains__(DMSType(class_name)):
                 dms_type = [x.get_value() for x in dms_types if x.name == class_name][0]
             else:
@@ -279,7 +276,7 @@ class Generator:
                 property_serial_number += 1
                 property_model_code = ModelCode(class_name, class_inheritances[class_name], dms_type, attribute_index(),
                                                 Generator.__type_mapping.get(property_type, '0a'), property_name)
-                class_property_name = f'{class_name.upper()}_{property_name.upper()}'
+                class_property_name = Generator.get_property_model_code_name(class_name, property_name)
                 property_model_codes[class_property_name] = property_model_code
                 model_codes_code_body += f'\n\t\t{property_model_code.__str__()},'
 
@@ -297,7 +294,7 @@ class Generator:
     @staticmethod
     def __generate_enums() -> None:
         enums_code = ''
-        for enum_name in Generator.__project_enums:
+        for enum_name in Generator.project_enums:
             if enums_code != '':
                 enums_code += '\n\n'
 
@@ -326,7 +323,7 @@ class Generator:
             parent_classes = []
 
         parent_class = [cls_props['inheritance'] for cls_name, cls_props in
-                        Generator.__transformed_project_specification.items() if cls_name == class_name][0]
+                        Generator.transformed_project_specification.items() if cls_name == class_name][0]
 
         if parent_class != '':
             Generator.__get_parent_classes(parent_class, parent_classes)
@@ -342,7 +339,7 @@ class Generator:
 
         for parent_class in parent_classes:
             parent_class_properties = {prop: type_ for prop, type_ in
-                                       Generator.__transformed_project_specification[parent_class].items() if
+                                       Generator.transformed_project_specification[parent_class].items() if
                                        prop not in ['type', 'inheritance', 'gid']}
 
             for prop, type_ in parent_class_properties.items():
@@ -371,10 +368,10 @@ class Generator:
             return (datetime.now() + timedelta(days=randint(1, 365))).strftime('%Y-%m-%dT%H:%M:%S')
         elif type_ == 'ref':
             try:
-                return sample(Generator.__concrete_classes_ids[class_property['property_name']], 1)[0]
+                return sample(Generator.concrete_classes_ids[class_property['property_name']], 1)[0]
             except KeyError:
                 try:
-                    return sample(Generator.__concrete_classes_ids[Generator.__reference_property_names_map[
+                    return sample(Generator.concrete_classes_ids[Generator.__reference_property_names_map[
                         f'{class_property["class_name"]}_{class_property["property_name"]}']], 1)[0]
                 except KeyError:
                     err_msg = f"[ERROR]: Coudln't find a reference for {class_property['class_name']}_{class_property['property_name']}."
@@ -385,8 +382,8 @@ class Generator:
             return ''
         else:  # enum
             try:
-                if type_ not in Generator.__project_enums:
-                    Generator.__project_enums.append(type_)
+                if type_ not in Generator.project_enums:
+                    Generator.project_enums.append(type_)
                 return choice(enums[type_])
             except KeyError:
                 err_msg = f"[ERROR]: Coudln't find enum {class_property['class_name']}_{class_property['property_name']}. (Enum: {type_})"
@@ -402,10 +399,10 @@ class Generator:
             prop_code = ''
 
             if prop['type'] == 'reflist':
-                if prop['class_name'] in Generator.__concrete_classes_ids:
-                    Generator.__concrete_classes_ids[prop['class_name']].add(instance_id)
+                if prop['class_name'] in Generator.concrete_classes_ids:
+                    Generator.concrete_classes_ids[prop['class_name']].add(instance_id)
                 else:
-                    Generator.__concrete_classes_ids[prop['class_name']] = {instance_id}
+                    Generator.concrete_classes_ids[prop['class_name']] = {instance_id}
                 continue
             elif prop['type'] == 'ref':
                 prop_code = f'\t\t<cim:{prop["class_name"]}.{prop["property_name"]} rdf:resource="#{value}"/>'
@@ -419,17 +416,17 @@ class Generator:
         return class_properties_code
 
     @staticmethod
-    def __generate_xml_data() -> None:
-        Generator.__concrete_classes_ids = {}
+    def __generate_xml_data(data_points: int = 0) -> None:
+        Generator.concrete_classes_ids = {}
         data_points_count = int(
             Prompter.prompt_numeric_question('Concrete data generation', 'How many data points do you want per class')[
-                'Concrete data generation'])
+                'Concrete data generation']) if data_points == 0 else 1
         os.system('cls' if os.name in ('nt', 'dos') else 'clear')
 
         xml_code = XML_FILE_TEMPLATE
         xml_data_code = ''
 
-        for class_name, class_attr in Generator.__transformed_concrete_classes.items():
+        for class_name, class_attr in Generator.transformed_concrete_classes.items():
             xml_data_code += f'\n\n\t<!-- {class_name} -->'
             class_properties = Generator.__get_all_class_properties(class_name)
 
@@ -440,8 +437,9 @@ class Generator:
                 xml_data_code += concrete_data_point.code
 
         xml_code = xml_code.replace('{{data}}', xml_data_code)
-        Generator.__xml_data_code = xml_code
-        pyperclip.copy(Generator.__xml_data_code)
+        if data_points == 0:
+            Generator.__xml_data_code = xml_code
+            pyperclip.copy(Generator.__xml_data_code)
 
     # </editor-fold>
 
@@ -449,11 +447,11 @@ class Generator:
 
     @staticmethod
     def __class_has_ref(class_name: str) -> bool:
-        return any(value == 'ref' for value in Generator.__transformed_project_specification[class_name].values())
+        return any(value == 'ref' for value in Generator.transformed_project_specification[class_name].values())
 
     @staticmethod
     def __get_class_parent(class_name: str) -> str:
-        return [value for key, value in Generator.__transformed_project_specification[class_name].items() if
+        return [value for key, value in Generator.transformed_project_specification[class_name].items() if
                 key == 'inheritance'][0]
 
     @staticmethod
@@ -468,7 +466,7 @@ class Generator:
 
         for attr, type_ in class_attributes.items():
             attr_model_code = f'{class_name.upper()}_{attr.upper()}'
-            capitalized_attr = attr[0].upper() + attr[1:] if attr != 'mRID' else attr.upper()
+            capitalized_attr = Generator.capitalize_attr(attr)
             if type_ in ['int', 'float', 'double', 'string', 'bool', 'datetime']:
                 properties_code += PROPERTY_CODE_TEMPLATE.replace('{{class_name}}', class_name) \
                     .replace('{{property_name}}', capitalized_attr).replace('{{property_model_code}}',
@@ -492,7 +490,7 @@ class Generator:
     @staticmethod
     def __generate_populate_methods() -> str:
         class_codes = ''
-        for class_name, class_attributes in Generator.__transformed_project_specification.items():
+        for class_name, class_attributes in Generator.transformed_project_specification.items():
             class_code = '\n\n' if class_name != 'IdentifiedObject' else ''
             class_code += POPULATE_CLASS_PROPERTIES_METHOD_TEMPLATE \
                 .replace('{{class_name}}', class_name).replace('{{namespace}}', Generator.__namespace)
@@ -547,11 +545,11 @@ class Generator:
 
     @staticmethod
     def __generate_get_dms_methods() -> str:
-        if len(Generator.__project_enums) == 0:
+        if len(Generator.project_enums) == 0:
             return ''
 
         methods_code = ''
-        for enum_name in Generator.__project_enums:
+        for enum_name in Generator.project_enums:
             enum_var_name = enum_name[0].lower() + enum_name[1:]
             method_code = '\n\n' if methods_code != '' else ''
             method_code += GET_DMS_ENUM_METHOD_TEMPLATE
@@ -583,7 +581,7 @@ class Generator:
         import_methods_calls_function_code = IMPORT_METHOD_CALLS_FUNCTION_TEMPLATE
         import_function_calls_code = ''
 
-        for class_name, attribues in Generator.__transformed_concrete_classes.items():
+        for class_name, attribues in Generator.transformed_concrete_classes.items():
             import_function_call_code = '\n' if import_function_calls_code != '' else ''
             import_function_call_code += IMPORT_METHOD_CALL_TEMPLATE.replace('{{class_name}}', class_name)
             import_function_calls_code += import_function_call_code
@@ -614,7 +612,7 @@ class Generator:
         import_methods_calls_function_code = Generator.__generate_import_methods_calls_function()
 
         import_class_methods_code = ''
-        for class_name, attribues in Generator.__transformed_concrete_classes.items():
+        for class_name, attribues in Generator.transformed_concrete_classes.items():
             importer_method_pair_code = Generator.__generate_importer_methods_pair_for_class(class_name)
             if import_class_methods_code != '':
                 importer_method_pair_code = '\n\n' + importer_method_pair_code
@@ -626,5 +624,263 @@ class Generator:
 
         Generator.__import_methods_code = import_methods_code
         pyperclip.copy(import_methods_code)
+
+    # </editor-fold>
+
+    # <editor-fold desc="SEVER CLASSES GENERATION">
+
+    @staticmethod
+    def __generate_server_classes() -> None:
+        Generator.server_classes_codes = {}
+
+        for class_name, attributes in Generator.transformed_project_specification.items():
+            if class_name == 'IdentifiedObject':
+                Generator.server_classes_codes[class_name] = IDENTIFIED_OBJECT_CLASS_CODE
+                continue
+
+            # properties code
+            parent_class_name = Generator.__get_class_parent(class_name)
+            server_class_code = SERVER_CLASS_TEMPLATE.replace('{{class_name}}', class_name) \
+                .replace('{{parent_class_name}}', parent_class_name)
+            properties_code = '' if len(attributes) <= 2 else '\n'
+            for attribute_key, attribute_value in attributes.items():
+                if attribute_key in ['type', 'inheritance']:
+                    continue
+
+                if properties_code != '\n':
+                    properties_code += '\n'
+                capitalizes_attribute_key = Generator.capitalize_attr(attribute_key)
+                property_code = SERVER_CLASS_PROPERTY_TEMPLATE
+                if attribute_value not in ['ref', 'reflist']:
+                    if attribute_value == 'datetime':
+                        property_code = property_code.replace('{{prop_type}}', 'DateTime') \
+                            .replace('{{prop_name}}', capitalizes_attribute_key)
+                    else:
+                        property_code = property_code.replace('{{prop_type}}', attribute_value) \
+                            .replace('{{prop_name}}', capitalizes_attribute_key)
+                elif attribute_value == 'ref':
+                    property_code = property_code.replace('{{prop_type}}', 'long') \
+                        .replace('{{prop_name}}', capitalizes_attribute_key)
+                elif attribute_value == 'reflist':
+                    property_code = SERVER_CLASS_REFLIST_PROPERTY_TEMPLATE.replace('{{prop_name}}',
+                                                                                   capitalizes_attribute_key)
+
+                properties_code += property_code
+            server_class_code = server_class_code.replace('{{properties}}', properties_code)
+
+            # IAccess region code
+            iaccess_region_code = IACCESS_IMPLEMENTATION_CODE_TEMPLATE
+
+            # HasProperty
+            has_property_code = HAS_PROPERTY_CODE_TEMPLATE
+            has_property_cases_code = HAS_PROPERTY_CASES_CODE_TEMPLATE if len(attributes) > 2 else ''
+            if len(attributes) > 2:
+                has_property_inner_cases_code = ''
+                for attribute_key, attribute_value in attributes.items():
+                    if attribute_key in ['type', 'inheritance']:
+                        continue
+
+                    if has_property_inner_cases_code != '':
+                        has_property_inner_cases_code += '\n'
+                    has_property_case_code = HAS_PROPERTY_CASE_CODE_TEMPLATE.replace(
+                        '{{prop_model_code}}', Generator.get_property_model_code_name(class_name, attribute_key))
+                    has_property_inner_cases_code += has_property_case_code
+                has_property_cases_code = has_property_cases_code.replace('{{cases_code}}',
+                                                                          has_property_inner_cases_code)
+            has_property_code = has_property_code.replace('{{cases_code}}', has_property_cases_code)
+            iaccess_region_code = iaccess_region_code.replace('{{has_property_code}}', has_property_code)
+
+            # GetProperty
+            get_property_code = GET_PROPERTY_CODE_TEMPLATE
+            get_property_cases_code = ''
+            if len(attributes) > 2:  # has properties
+                get_property_cases_code += '\n'
+                for attribute_key, attribute_value in attributes.items():
+                    if attribute_key in ['type', 'inheritance']:
+                        continue
+
+                    if get_property_cases_code != '':
+                        get_property_cases_code += '\n\n'
+                    capitalizes_attribute_key = Generator.capitalize_attr(attribute_key)
+                    get_property_case_code = GET_PROPERTY_CASE_CODE_TEMPLATE.replace(
+                        '{{prop_model_code}}', Generator.get_property_model_code_name(class_name, attribute_key)) \
+                        .replace('{{prop_name}}', capitalizes_attribute_key)
+
+                    get_property_cases_code += get_property_case_code
+
+            if len(attributes) > 2:  # has properties
+                get_property_cases_code += '\n\n'
+            get_property_code = get_property_code.replace('{{cases_code}}', get_property_cases_code)
+            iaccess_region_code = iaccess_region_code.replace('{{get_property_code}}', get_property_code)
+
+            # SetProperty
+            set_property_code = SET_PROPERTY_CODE_TEMPLATE
+            set_property_cases_code = ''
+            if len(attributes) > 2:  # has properties
+                set_property_cases_code += '\n'
+                for attribute_key, attribute_value in attributes.items():
+                    if attribute_key in ['type', 'inheritance']:
+                        continue
+
+                    if set_property_cases_code != '\n':
+                        set_property_cases_code += '\n\n'
+                    capitalizes_attribute_key = Generator.capitalize_attr(attribute_key)
+                    capitalizes_attribute_value = Generator.capitalize_attr(attribute_value)
+                    set_property_case_code = SET_PROPERTY_CASE_CODE_TEMPLATE.replace(
+                        '{{prop_model_code}}', Generator.get_property_model_code_name(class_name, attribute_key)) \
+                        .replace('{{prop_name}}', capitalizes_attribute_key)
+                    if attribute_value in ['bool', 'float', 'int', 'string']:
+                        set_property_case_code = set_property_case_code.replace('{{prop_type}}',
+                                                                                capitalizes_attribute_value)
+                    elif attribute_value == 'datetime':
+                        set_property_case_code = set_property_case_code.replace('{{prop_type}}', 'DateTime')
+                    elif attribute_value == 'ref':
+                        set_property_case_code = set_property_case_code.replace('{{prop_type}}', 'Long')
+                    elif attribute_value == 'reflist':
+                        set_property_case_code = set_property_case_code.replace('{{prop_type}}', 'Longs')
+                    else:
+                        set_property_case_code = SET_PROPERTY_ENUM_CASE_CODE_TEMPLATE \
+                            .replace('{{prop_model_code}}',
+                                     Generator.get_property_model_code_name(class_name, attribute_key)) \
+                            .replace('{{prop_name}}', capitalizes_attribute_key) \
+                            .replace('{{enum_name}}', capitalizes_attribute_value)
+
+                    set_property_cases_code += set_property_case_code
+
+            if len(attributes) > 2:  # has properties
+                set_property_cases_code += '\n\n'
+            set_property_code = set_property_code.replace('{{cases_code}}', set_property_cases_code)
+            iaccess_region_code = iaccess_region_code.replace('{{set_property_code}}', set_property_code)
+
+            server_class_code = server_class_code.replace('{{iaccess_implementation}}', iaccess_region_code)
+
+            # IReference region code
+            this_class_has_reflist = Generator.class_contains_reflist(class_name)
+            this_class_has_ref = Generator.class_contains_ref(class_name)
+            ireference_region_code = IREFERENCE_IMPLEMENTATION_CODE_TEMPLATE
+
+            if not this_class_has_reflist and not this_class_has_ref:
+                server_class_code = server_class_code.replace('{{ireference_implementation}}', '')
+            else:
+                if this_class_has_reflist:
+                    reflists = Generator.get_class_reflists(class_name)
+
+                    # is referenced
+                    is_referenced_code = IS_REFERENCED_CODE_TEMPLATE
+                    is_referenced_inner_code = ''
+                    for reflist in reflists.keys():
+                        if is_referenced_inner_code != '':
+                            is_referenced_inner_code += ' && '
+                        capitalized_reflist = Generator.capitalize_attr(reflist)
+                        is_referenced_inner_code += IS_REFERENCED_INNER_CODE_TEMPLATE.replace('{{prop_name}}',
+                                                                                              capitalized_reflist)
+                    is_referenced_code = is_referenced_code.replace('{{is_referenced_inner_code}}',
+                                                                    is_referenced_inner_code)
+                    ireference_region_code = ireference_region_code.replace('{{is_referenced_code}}',
+                                                                            is_referenced_code)
+
+                    # add reference
+                    add_reference_code = ADD_REFERENCE_CODE_TEMPLATE
+                    cases_code = ''
+                    for reflist in reflists.keys():
+                        if cases_code != '':
+                            cases_code += '\n'
+                        capitalized_reflist = Generator.capitalize_attr(reflist)
+                        cases_code += ADD_REFERENCE_CASE_CODE_TEMPLATE \
+                            .replace('{{prop_name}}', capitalized_reflist) \
+                            .replace('{{prop_model_code_name}}',
+                                     Generator.get_property_model_code_name(reflist[:-1], class_name))
+                    add_reference_code = add_reference_code.replace('{{cases_code}}', cases_code)
+                    ireference_region_code = ireference_region_code.replace('{{add_reference_code}}',
+                                                                            add_reference_code)
+
+                    # remove reference
+                    remove_reference_code = REMOVE_REFERENCE_CODE_TEMPLATE
+                    cases_code = ''
+                    for reflist in reflists.keys():
+                        if cases_code != '':
+                            cases_code += '\n'
+                        capitalized_reflist = Generator.capitalize_attr(reflist)
+                        cases_code += REMOVE_REFERENCE_CASE_CODE_TEMPLATE \
+                            .replace('{{prop_name}}', capitalized_reflist) \
+                            .replace('{{prop_model_code_name}}',
+                                     Generator.get_property_model_code_name(reflist[:-1], class_name))
+                    remove_reference_code = remove_reference_code.replace('{{cases_code}}', cases_code)
+                    ireference_region_code = ireference_region_code.replace('{{remove_reference_code}}',
+                                                                            remove_reference_code)
+                else:
+                    ireference_region_code = ireference_region_code \
+                        .replace('{{is_referenced_code}}', '') \
+                        .replace('{{add_reference_code}}', '') \
+                        .replace('{{remove_reference_code}}', '')
+
+                if this_class_has_ref:
+                    refs = Generator.get_class_refs(class_name)
+
+                    # get references
+                    get_references_code = GET_REFERENCES_CODE_TEMPLATE
+                    reference_codes = ''
+                    for ref in refs.keys():
+                        if reference_codes != '':
+                            reference_codes += '\n'
+                        capitalized_ref = Generator.capitalize_attr(ref)
+
+                        reference_codes += GET_REFERENCES_REFERENCE_CODE_TEMPLATE \
+                            .replace('{{prop_name}}', capitalized_ref) \
+                            .replace('{{prop_model_code_name}}',
+                                     Generator.get_property_model_code_name(class_name, ref))
+                    get_references_code = get_references_code.replace('{{reference_codes}}', reference_codes)
+                    ireference_region_code = ireference_region_code.replace('{{get_references_code}}',
+                                                                            get_references_code)
+                else:
+                    ireference_region_code = ireference_region_code.replace('{{get_references_code}}', '')
+
+                server_class_code = server_class_code.replace('{{ireference_implementation}}', ireference_region_code)
+
+            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            pyperclip.copy(server_class_code)
+            print(f'Copied server class code for the class: {class_name}')
+            input()
+            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+
+    @staticmethod
+    def __generate_server_enums() -> None:
+        for enum_name in Generator.project_enums:
+            server_enum_code = SERVER_ENUM_TEMPLATE.replace('{{enum_name}}', enum_name)
+
+            enum_values = ''
+            for value in enums[enum_name]:
+                if enum_values != '':
+                    enum_values += '\n'
+                enum_values += f'\t\t{value},'
+            server_enum_code = server_enum_code.replace('{{enum_values}}', enum_values)
+
+            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            pyperclip.copy(server_enum_code)
+            print(f'Copied server class code for the enum: {enum_name}')
+            input()
+            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+
+    # </editor-fold>
+
+    # <editor-fold desc="Other">
+
+    capitalize_attr = lambda attr: attr[0].upper() + attr[1:] if attr != 'mRID' else attr.upper()
+
+    get_property_model_code_name = lambda class_name, property_name: f'{class_name.upper()}_{property_name.upper()}'
+
+    class_contains_reflist = lambda class_name: any(
+        value == 'reflist' for value in Generator.transformed_project_specification.get(class_name, {}).values())
+
+    class_contains_ref = lambda class_name: any(
+        value == 'ref' for value in Generator.transformed_project_specification.get(class_name, {}).values())
+
+    get_class_reflists = lambda class_name: {key: value for key, value in
+                                             Generator.transformed_project_specification.get(class_name, {}).items() if
+                                             value == 'reflist'}
+
+    get_class_refs = lambda class_name: {key: value for key, value in
+                                         Generator.transformed_project_specification.get(class_name, {}).items() if
+                                         value == 'ref'}
 
     # </editor-fold>

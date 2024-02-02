@@ -12,8 +12,8 @@ def main():
             'name': 'menu_choice',
             'message': 'Select tool to use:',
             'choices': [
-                'Stock Analyzer',
                 'Code Generator',
+                'Stock Analyzer',
             ],
         },
     ]
