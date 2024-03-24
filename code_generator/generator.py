@@ -6,6 +6,8 @@ from random import randint, uniform, choice, sample
 
 import pyperclip
 from inquirer2 import prompt as pmt
+import tkinter as tk
+from tkinter import filedialog
 
 from common.constants.templates import *
 from common.enums.enums import enums
@@ -37,6 +39,10 @@ class Generator:
     __reference_property_names_map = {
         'RegularTimePoint_IntervalSchedule': 'RegularIntervalSchedule',
         'IrregularTimePoint_IntervalSchedule': 'IrregularIntervalSchedule',
+    }
+    __reference_property_model_code_names_map = {
+        'REGULARTIMEPOINT_REGULARINTERVALSCHEDULE': 'REGULARTIMEPOINT_INTERVALSCHEDULE',
+        'IRREGULARTIMEPOINT_IRREGULARINTERVALSCHEDULE': 'IRREGULARTIMEPOINT_INTERVALSCHEDULE',
     }
     __namespace = ''
     __dll_file_prefix = ''
@@ -97,6 +103,7 @@ class Generator:
                         'Generate Importer Methods',
                         'Generate Server Classes',
                         'Generate Server Enum Classes',
+                        'Back',
                     ],
                 },
             ]
@@ -124,6 +131,8 @@ class Generator:
                 Generator.__generate_server_classes()
             elif choice == 'Generate Server Enum Classes':
                 Generator.__generate_server_enums()
+            elif choice == 'Back':
+                break
 
     # <editor-fold desc="PROJECT SETUP">
 
@@ -632,10 +641,12 @@ class Generator:
     @staticmethod
     def __generate_server_classes() -> None:
         Generator.server_classes_codes = {}
+        classes_folder_path = Generator.select_folder()
 
         for class_name, attributes in Generator.transformed_project_specification.items():
             if class_name == 'IdentifiedObject':
                 Generator.server_classes_codes[class_name] = IDENTIFIED_OBJECT_CLASS_CODE
+                Generator.create_file(classes_folder_path, 'IdentifiedObject', IDENTIFIED_OBJECT_CLASS_CODE)
                 continue
 
             # properties code
@@ -702,9 +713,14 @@ class Generator:
                     if get_property_cases_code != '':
                         get_property_cases_code += '\n\n'
                     capitalizes_attribute_key = Generator.capitalize_attr(attribute_key)
-                    get_property_case_code = GET_PROPERTY_CASE_CODE_TEMPLATE.replace(
-                        '{{prop_model_code}}', Generator.get_property_model_code_name(class_name, attribute_key)) \
-                        .replace('{{prop_name}}', capitalizes_attribute_key)
+                    if attribute_value in Generator.project_enums:
+                        get_property_case_code = GET_ENUM_PROPERTY_CASE_CODE_TEMPLATE.replace(
+                            '{{prop_model_code}}', Generator.get_property_model_code_name(class_name, attribute_key)) \
+                            .replace('{{prop_name}}', capitalizes_attribute_key)
+                    else:
+                        get_property_case_code = GET_PROPERTY_CASE_CODE_TEMPLATE.replace(
+                            '{{prop_model_code}}', Generator.get_property_model_code_name(class_name, attribute_key)) \
+                            .replace('{{prop_name}}', capitalizes_attribute_key)
 
                     get_property_cases_code += get_property_case_code
 
@@ -837,14 +853,22 @@ class Generator:
 
                 server_class_code = server_class_code.replace('{{ireference_implementation}}', ireference_region_code)
 
-            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
-            pyperclip.copy(server_class_code)
-            print(f'Copied server class code for the class: {class_name}')
-            input()
-            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            Generator.server_classes_codes[class_name] = server_class_code
+            Generator.create_file(classes_folder_path, class_name, server_class_code)
+            # os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            # pyperclip.copy(server_class_code)
+            # print(f'Copied server class code for the class: {class_name}')
+            # input()
+            # os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        print(f'Classes generated at: {classes_folder_path}')
+        input()
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
 
     @staticmethod
     def __generate_server_enums() -> None:
+        classes_folder_path = Generator.select_folder()
+
         for enum_name in Generator.project_enums:
             server_enum_code = SERVER_ENUM_TEMPLATE.replace('{{enum_name}}', enum_name)
 
@@ -852,22 +876,52 @@ class Generator:
             for value in enums[enum_name]:
                 if enum_values != '':
                     enum_values += '\n'
-                enum_values += f'\t\t{value},'
+                enum_values += f'\t\t{"@" if value == "fixed" else ""}{value},'
             server_enum_code = server_enum_code.replace('{{enum_values}}', enum_values)
+            Generator.create_file(classes_folder_path, enum_name, server_enum_code)
 
-            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
-            pyperclip.copy(server_enum_code)
-            print(f'Copied server class code for the enum: {enum_name}')
-            input()
-            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            # os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            # pyperclip.copy(server_enum_code)
+            # print(f'Copied server class code for the enum: {enum_name}')
+            # input()
+            # os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        print(f'Classes generated at: {classes_folder_path}')
+        input()
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
 
     # </editor-fold>
 
-    # <editor-fold desc="Other">
+    # <editor-fold desc="FILE OPERATIONS">
+
+    @staticmethod
+    def create_file(folder_path, filename, content):
+        file_path = f"{folder_path}/{filename}.cs"
+        with open(file_path, 'w') as file:
+            file.write(content)
+        print(f"File '{file}.cs' created at: {file_path}")
+
+    @staticmethod
+    def select_folder():
+        root = tk.Tk()
+        root.withdraw()
+
+        folder_path = filedialog.askdirectory(title="Select a Folder")
+        return folder_path
+
+    # </editor-fold>
+
+    # <editor-fold desc="OTHER">
 
     capitalize_attr = lambda attr: attr[0].upper() + attr[1:] if attr != 'mRID' else attr.upper()
 
-    get_property_model_code_name = lambda class_name, property_name: f'{class_name.upper()}_{property_name.upper()}'
+    @staticmethod
+    def get_property_model_code_name(class_name, property_name):
+        prop_model_code = f'{class_name.upper()}_{property_name.upper()}'
+        adapted_model_code_name = Generator.__reference_property_model_code_names_map.get(prop_model_code, None)
+        if adapted_model_code_name:
+            return adapted_model_code_name
+        return prop_model_code
 
     class_contains_reflist = lambda class_name: any(
         value == 'reflist' for value in Generator.transformed_project_specification.get(class_name, {}).values())

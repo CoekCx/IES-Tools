@@ -138,4 +138,28 @@ class Prompter:
     @staticmethod
     def prompt_text_question(title='', message=''):
         questions = [inq.Text(title, message=message)]
-        return inq.prompt(questions)
+        return inq.prompt(questions) @ staticmethod
+
+    @staticmethod
+    def prompt_for_index(upper_limit: int, lower_limit: int = 0, msg: str = ''):
+        questions = [
+            {
+                'type': 'input',
+                'name': 'index',
+                'message': 'Select index' if msg == '' else msg,
+                'validate': lambda x: True if Prompter.__validate_int(x, upper_limit,
+                                                                      lower_limit) else 'Invalid index value'
+            },
+        ]
+
+        return int(pmt.prompt(questions=questions)['index'])
+
+    @staticmethod
+    def __validate_int(value, upper_limit: int, lower_limit: int):
+        try:
+            value = int(value)
+            if lower_limit <= value <= upper_limit:
+                return True
+            return False
+        except:
+            return False

@@ -7,10 +7,10 @@ enums = {
                   'ABCN'],
     'TransformerFunction': ['Supply', 'Consumer', 'Grounding', 'Voltreg', 'Step', 'Generator', 'Transmission',
                             'Interconnection'],
-    'WindingConnection': ['Y', 'D', 'Z', 'I', 'Scott', 'OY', 'OD'],
+    'WindingConnection': ['A', 'D', 'I', 'Y', 'Yn', 'Z', 'Zn'],
     'WindingType': ['None', 'Primary', 'Secondary', 'Tertiary'],
     'TransformerControlMode': ['reactive', 'volt'],
     'RegulatingControlModeKind': ['voltage', 'activePower', 'reactivePower', 'currentFlow', 'fixed', 'admittance',
                                   'timeScheduled', 'temperature', 'powerFactor'],
-    'SwitchState': ['open', 'closed']
+    'SwitchState': ['open', 'close']
 }

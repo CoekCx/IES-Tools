@@ -88,5 +88,4 @@ class Analyzer:
             user_input = input("Enter a command: ")
             result = Analyzer.__handle_command(user_input, data)
             if result == "exit":
-                print("Exiting.")
                 break

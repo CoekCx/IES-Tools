@@ -1,3 +1,4 @@
+import json
 import os
 import re
 
@@ -44,3 +45,20 @@ class DataReader:
         for class_list in all_class_lists:
             all_class_set.update(class_list)
         return list(all_class_set)
+
+    @staticmethod
+    def load_data(folder_path: str = DATA_PATH, file_name: str = 'data.json') -> list:
+        file_path = os.path.join(folder_path, file_name)
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+        except FileNotFoundError:
+            os.makedirs(folder_path, exist_ok=True)  # Create folder if it doesn't exist
+            data = []  # Initialize with an empty list if file doesn't exist
+        except json.JSONDecodeError:
+            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            print(f"Error decoding JSON in file '{file_name}'")
+            input()
+            return None
+
+        return data

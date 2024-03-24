@@ -306,10 +306,10 @@ namespace FTN.Services.NetworkModelService.DataModel.Classes
 		{
 			switch(property)
 			{
-				case ModelCode.IDOBJ_GID:				
-				case ModelCode.IDOBJ_NAME:
-				case ModelCode.IDOBJ_ALIASNAME:
-				case ModelCode.IDOBJ_MRID:
+				case ModelCode.IDENTIFIEDOBJECT_GID:				
+				case ModelCode.IDENTIFIEDOBJECT_NAME:
+				case ModelCode.IDENTIFIEDOBJECT_ALIASNAME:
+				case ModelCode.IDENTIFIEDOBJECT_MRID:
 					return true;
 
 				default:				
@@ -321,19 +321,19 @@ namespace FTN.Services.NetworkModelService.DataModel.Classes
 		{
 			switch(property.Id)
 			{
-				case ModelCode.IDOBJ_GID:
+				case ModelCode.IDENTIFIEDOBJECT_GID:
 					property.SetValue(globalId);
 					break;
 
-				case ModelCode.IDOBJ_NAME:
+				case ModelCode.IDENTIFIEDOBJECT_NAME:
 					property.SetValue(name);
 					break;
 
-				case ModelCode.IDOBJ_MRID:
+				case ModelCode.IDENTIFIEDOBJECT_MRID:
 					property.SetValue(mrid);
 					break;
 
-                case ModelCode.IDOBJ_ALIASNAME:
+                case ModelCode.IDENTIFIEDOBJECT_ALIASNAME:
                     property.SetValue(aliasName);
                     break;
 
@@ -348,15 +348,15 @@ namespace FTN.Services.NetworkModelService.DataModel.Classes
 		{
 			switch(property.Id)
 			{
-				case ModelCode.IDOBJ_NAME:
+				case ModelCode.IDENTIFIEDOBJECT_NAME:
 					name = property.AsString();					
 					break;
 
-				case ModelCode.IDOBJ_ALIASNAME:
+				case ModelCode.IDENTIFIEDOBJECT_ALIASNAME:
 					aliasName = property.AsString();					
 					break;
 
-				case ModelCode.IDOBJ_MRID:					
+				case ModelCode.IDENTIFIEDOBJECT_MRID:					
 					mrid = property.AsString();
 					break;				
 
@@ -556,6 +556,10 @@ GET_PROPERTY_CODE_TEMPLATE = '''\t\tpublic override void GetProperty(Property pr
 
 GET_PROPERTY_CASE_CODE_TEMPLATE = '''\t\t\t\tcase ModelCode.{{prop_model_code}}:
 \t\t\t\t\tproperty.SetValue({{prop_name}});
+\t\t\t\t\tbreak;'''
+
+GET_ENUM_PROPERTY_CASE_CODE_TEMPLATE = '''\t\t\t\tcase ModelCode.{{prop_model_code}}:
+\t\t\t\t\tproperty.SetValue((short){{prop_name}});
 \t\t\t\t\tbreak;'''
 
 SET_PROPERTY_CODE_TEMPLATE = '''\t\tpublic override void SetProperty(Property property)
