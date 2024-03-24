@@ -197,6 +197,11 @@ class DataManager:
     def __select_specification():
         os.system('cls' if os.name in ('nt', 'dos') else 'clear')
         existing_data = DataManager.__load_data_using_models()
+        if not existing_data:
+            print(colored('Warning: No specification data!'))
+            input()
+            return
+
         DataManager.__print_specifications_table(existing_data)
         choices = [spec.path for spec in existing_data]
         choices.append('Back')
@@ -206,6 +211,23 @@ class DataManager:
             return
 
         return existing_data[index - 1]
+
+    @staticmethod
+    def select_specification_json_data():
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        existing_data = DataManager.__load_data_using_models()
+        if not existing_data:
+            print(colored('Warning: No specification data!'))
+            input()
+            return
+
+        DataManager.__print_specifications_table(existing_data)
+        choices = [spec.path for spec in existing_data]
+        choices.append('Back')
+
+        index = Prompter.prompt_for_index(upper_limit=len(existing_data), lower_limit=1)
+
+        return existing_data[index - 1].properties_to_json_data()
 
     @staticmethod
     def __convert_specifications_to_json_data(data: list[Specification]) -> list:

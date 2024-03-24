@@ -138,7 +138,7 @@ class Prompter:
     @staticmethod
     def prompt_text_question(title='', message=''):
         questions = [inq.Text(title, message=message)]
-        return inq.prompt(questions) @ staticmethod
+        return inq.prompt(questions)
 
     @staticmethod
     def prompt_for_index(upper_limit: int, lower_limit: int = 0, msg: str = ''):

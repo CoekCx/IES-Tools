@@ -1,6 +1,5 @@
 import os
 import string
-import sys
 from datetime import datetime, timedelta
 from random import randint, uniform, choice, sample
 
@@ -15,6 +14,7 @@ from common.models.concrete_class_data_point import ConcreteClassDataPoint
 from common.models.dms_type import DMSType
 from common.models.model_code import ModelCode
 from common.models.models import transform_properties, transformed_models
+from data_manager.data_manager import DataManager
 from prompter.prompter import Prompter
 
 
@@ -60,29 +60,7 @@ class Generator:
 
     @staticmethod
     def start_app() -> None:
-        # Ask the user if they want to enter project specifications
-        specification_question = [
-            {
-                'type': 'confirm',
-                'name': 'enter_specifications',
-                'message': 'Do you want to enter project specifications?',
-                'default': True,
-            }
-        ]
-
-        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
-        specification_answer = pmt.prompt(specification_question)
-
-        if specification_answer['enter_specifications']:
-            # If the user wants to enter specifications, call the method
-            Generator.__get_environment_variables()
-            Generator.__get_project_specifications()
-            Generator.__detect_project_enums()
-        else:
-            Generator.__namespace = 'FTN1'
-            Generator.__dll_file_prefix = 'classes'
-            Generator.__get_project_specifications(True)
-
+        Generator.__set_project_specification()
         Generator.__generate_xml_data(1)  # need to call this so that we can scan all the project enums
         Generator.__main_menu()
 
@@ -114,9 +92,7 @@ class Generator:
             choice = answers['menu_choice']
 
             if choice == 'Set Project Specification':
-                Generator.__get_environment_variables()
-                Generator.__get_project_specifications()
-                Generator.__detect_project_enums()
+                Generator.__set_project_specification()
             elif choice == 'Generate Model Defines':
                 Generator.__generate_model_defines()
             elif choice == 'Generate Enumes':
@@ -137,46 +113,44 @@ class Generator:
     # <editor-fold desc="PROJECT SETUP">
 
     @staticmethod
+    def __set_project_specification():
+        specification_question = [
+            {
+                'type': 'list',
+                'name': 'specification_choice',
+                'message': 'Select an option:',
+                'choices': [
+                    'Enter Specifications',
+                    'Load Specifications',
+                    'Back',
+                ],
+            },
+        ]
+
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        specification_answer = pmt.prompt(specification_question)['specification_choice']
+
+        if specification_answer == 'Enter Specifications':
+            Generator.__get_environment_variables()
+            Generator.__get_project_specifications(True)
+            Generator.__detect_project_enums()
+        elif specification_answer == 'Load Specifications':
+            Generator.__get_environment_variables()
+            Generator.__get_project_specifications(False)
+            Generator.__detect_project_enums()
+        elif specification_answer == 'Back':
+            return
+
+    @staticmethod
     def __get_environment_variables() -> None:
         Generator.__namespace, Generator.__dll_file_prefix = Prompter.prompt_user_for_environment_varialbes()
 
     @staticmethod
-    def __get_project_specifications(autoset: bool = False) -> None:
-        if autoset:
-            Generator.project_specification = {
-                'IdentifiedObject': [('abstract', 'type'), ('', 'inheritance'), ('gid', 'long'), ('mRID', 'string'),
-                                     ('aliasName', 'string'), ('name', 'string')],
-                'PowerSystemResource': [('abstract', 'type'), ('IdentifiedObject', 'inheritance')],
-                'Equipment': [('abstract', 'type'), ('PowerSystemResource', 'inheritance'), ('aggregate', 'bool'),
-                              ('normallyInService', 'bool')],
-                'ConductingEquipment': [('abstract', 'type'), ('Equipment', 'inheritance')],
-                'Switch': [('concrete', 'type'), ('ConductingEquipment', 'inheritance'), ('normalOpen', 'bool'),
-                           ('retained', 'bool'), ('switchOnCount', 'int'), ('switchOnDate', 'datetime'),
-                           ('ratedCurrent', 'float')],
-                'RegulatingControl': [('concrete', 'type'), ('PowerSystemResource', 'inheritance'),
-                                      ('RegulationSchedules', 'reflist'), ('discrete', 'bool'),
-                                      ('mode', 'RegulatingControlModeKind'), ('monitoredPhase', 'PhaseCode'),
-                                      ('targetRange', 'float'), ('targetValue', 'float')],
-                'TapChanger': [('concrete', 'type'), ('PowerSystemResource', 'inheritance'),
-                               ('TapSchedules', 'reflist')],
-                'DayType': [('concrete', 'type'), ('IdentifiedObject', 'inheritance'),
-                            ('SeasonDayTypeSchedules', 'reflist')],
-                'BasicIntervalSchedule': [('abstract', 'type'), ('IdentifiedObject', 'inheritance'),
-                                          ('startTime', 'datetime'), ('value1Multiplier', 'UnitMultiplier'),
-                                          ('value1Unit', 'UnitSymbol'), ('value2Multiplier', 'UnitMultiplier'),
-                                          ('value2Unit', 'UnitSymbol')],
-                'RegularIntervalSchedule': [('abstract', 'type'), ('BasicIntervalSchedule', 'inheritance'),
-                                            ('RegularTimePoints', 'reflist')],
-                'SeasonDayTypeSchedule': [('abstract', 'type'), ('RegularIntervalSchedule', 'inheritance'),
-                                          ('DayType', 'ref')],
-                'RegulationSchedule': [('concrete', 'type'), ('SeasonDayTypeSchedule', 'inheritance'),
-                                       ('RegulatingControl', 'ref')],
-                'TapSchedule': [('concrete', 'type'), ('SeasonDayTypeSchedule', 'inheritance'), ('TapChanger', 'ref')],
-                'RegularTimePoint': [('concrete', 'type'), ('IdentifiedObject', 'inheritance'),
-                                     ('IntervalSchedule', 'ref'), ('sequenceNumber', 'int'), ('value1', 'float'),
-                                     ('value2', 'float')]}
-        else:
+    def __get_project_specifications(manual_entry) -> None:
+        if manual_entry:
             Generator.project_specification = Prompter.prompt_user_for_project_specification()
+        else:
+            Generator.project_specification = DataManager.select_specification_json_data()
         Generator.transformed_project_specification = transform_properties(Generator.project_specification)
         concrete_classes = {class_name: class_attribues for class_name, class_attribues in
                             Generator.project_specification.items() if
