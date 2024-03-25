@@ -1,12 +1,16 @@
 import json
 import os
+import re
+
+from PIL import Image
 from inquirer2 import prompt as pmt
 import tkinter as tk
 from tkinter import filedialog
 from colorama import Fore, Style
 import pprint
 
-from common.constants.constants import DATA_PATH, IES_FOLDER_PATH_FORWARD_SLASH
+import common
+from common.constants.constants import DATA_PATH, IES_FOLDER_PATH_FORWARD_SLASH, IES_FOLDER_PATH
 from common.enums.class_type import ClassType
 from common.models.specification import Specification
 from prompter.prompter import Prompter
@@ -18,7 +22,7 @@ from termcolor import colored
 class DataManager:
     @staticmethod
     def start_app() -> None:
-        while True:
+        while not common.TRANSFER_TO_GENERATOR:
             questions = [
                 {
                     'type': 'list',
@@ -26,6 +30,7 @@ class DataManager:
                     'message': 'Select an option:',
                     'choices': [
                         'View Project Specifications',
+                        'Filter Project Specifications',
                         'Create Project Specification',
                         'Copy Project Specification',
                         'Delete Project Specification',
@@ -41,6 +46,8 @@ class DataManager:
 
             if choice == 'View Project Specifications':
                 DataManager.__view_project_specification()
+            elif choice == 'Filter Project Specifications':
+                DataManager.__view_filter_project_specifications()
             elif choice == 'Create Project Specification':
                 DataManager.__create_project_specification()
             elif choice == 'Copy Project Specification':
@@ -90,6 +97,48 @@ class DataManager:
         print(tabulate(table_data, headers=headers, tablefmt="fancy_grid"))
 
     @staticmethod
+    def __print_filtered_specifications_table(specifications: list[Specification], selected_classes: list[str]) -> None:
+        if not specifications:
+            return
+
+        headers = ["Index", "Path", "Classes", "References", "Overlap", "Missing"]
+        table_data = []
+
+        for index, spec in enumerate(specifications):
+            concrete_classes = ''
+            num_of_refs = 0
+            for el in spec.specification:
+                num_of_refs += el.num_of_refs
+                if el.type == ClassType.CONCRETE:
+                    concrete_classes += el.name + ' '
+
+            missing_classes = ''
+            for el_name in selected_classes:
+                if not spec.includes_element(el_name):
+                    missing_classes += el_name + ' '
+
+            table_data.append(
+                [index + 1, colored(spec.path, 'green'),
+                 colored(concrete_classes, 'cyan'),
+                 colored(num_of_refs, 'yellow'),
+                 colored(f"{spec.overlap_percentage:.2f}%",
+                         DataManager.__get_percentage_color(spec.overlap_percentage)),
+                 colored(missing_classes, 'red')])
+
+        print(tabulate(table_data, headers=headers, tablefmt="fancy_grid"))
+
+    @staticmethod
+    def __get_percentage_color(percentage: float) -> str:
+        if 75 <= percentage <= 100:
+            return 'green'
+        elif 50 <= percentage <= 74:
+            return 'yellow'
+        elif 25 <= percentage <= 49:
+            return 'light_red'
+        else:
+            return 'red'
+
+    @staticmethod
     def json_colored_pprint(obj):
         os.system('cls' if os.name in ('nt', 'dos') else 'clear')
         for key, value in obj.items():
@@ -111,8 +160,7 @@ class DataManager:
 
     @staticmethod
     def __create_project_specification():
-        new_specification = {}
-        new_specification['path'] = DataManager.__select_folder()
+        new_specification = {'path': DataManager.__select_folder()}
         if new_specification['path'] == '':
             os.system('cls' if os.name in ('nt', 'dos') else 'clear')
             print(Fore.RED + 'Warning: No folder selected for specification!' + Style.RESET_ALL)
@@ -213,7 +261,7 @@ class DataManager:
         return existing_data[index - 1]
 
     @staticmethod
-    def select_specification_json_data():
+    def select_specification() -> Specification:
         os.system('cls' if os.name in ('nt', 'dos') else 'clear')
         existing_data = DataManager.__load_data_using_models()
         if not existing_data:
@@ -227,7 +275,7 @@ class DataManager:
 
         index = Prompter.prompt_for_index(upper_limit=len(existing_data), lower_limit=1)
 
-        return existing_data[index - 1].properties_to_json_data()
+        return existing_data[index - 1]
 
     @staticmethod
     def __convert_specifications_to_json_data(data: list[Specification]) -> list:
@@ -238,3 +286,115 @@ class DataManager:
                 'specification': dp.properties_to_json_data()
             })
         return json_data
+
+    @staticmethod
+    def __view_filter_project_specifications():
+        while not common.TRANSFER_TO_GENERATOR:
+            filtered_data, selected_classes = DataManager.__filter_project_specifications()
+
+            while not common.TRANSFER_TO_GENERATOR:
+                os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+                DataManager.__print_filtered_specifications_table(filtered_data, selected_classes)
+
+                questions = [
+                    {
+                        'type': 'input',
+                        'name': 'command',
+                        'message': 'Enter command',
+                        'validate': lambda x: True if
+                        DataManager.__validate_command(x, len(filtered_data)) else 'Invalid command'
+                    },
+                ]
+
+                command: str = pmt.prompt(questions=questions)['command']
+                if command.startswith('b') or command.startswith('B') or \
+                        command.startswith('q') or command.startswith('Q'):
+                    return
+                if command.startswith('r') or command.startswith('R'):
+                    break
+
+                index = int(command.split(' ')[1]) - 1
+                if command.startswith('img'):
+                    DataManager.__img_command(filtered_data[index])
+                elif command.startswith('open'):
+                    DataManager.__open_command(filtered_data[index])
+                elif command.startswith('load'):
+                    DataManager.__load_command(filtered_data[index])
+
+    @staticmethod
+    def __filter_project_specifications():
+        os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+        selected_classes = Prompter.prompt_user_for_classes()
+
+        data = DataManager.__load_data_using_models()
+        if not data:
+            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            print(colored('Warning: No data found', 'red'))
+            input()
+            return
+
+        filtered_data = []
+        for spec in data:
+            if spec.includes_any_element_of(selected_classes):
+                filtered_data.append(spec)
+
+            overlap_percentage = 100 - (spec.count_missing_elements(selected_classes) / len(selected_classes) * 100)
+            spec.overlap_percentage = overlap_percentage
+
+        sorted_data = sorted(filtered_data, key=lambda x: x.overlap_percentage, reverse=True)
+
+        return sorted_data, selected_classes
+
+    @staticmethod
+    def __validate_command(input_str: str, upper_limit: int) -> bool:
+        # Define the regex pattern for matching commands
+        pattern = r"^(img|open|load)\s+(\d+)$|^q$|^quit$|^Q$|^Quit$|^b$|^B$|^back$|^Back$|^r$|^R$|^reset$|^Reset$"
+
+        # Match the input string with the pattern
+        match = re.match(pattern, input_str.strip())
+
+        if match:
+            # If the input matches any of the patterns
+            if match.group(1) == "img" or match.group(1) == "open":
+                # If the command is "img X" or "open X"
+                number = int(match.group(2))
+                return 1 <= number <= upper_limit
+            else:
+                # If the command is "q", "Q", "quit", or "Quit"
+                return True
+        else:
+            # If no match found
+            return False
+
+    @staticmethod
+    def __open_command(spec: Specification):
+        try:
+            folder_path = f'{IES_FOLDER_PATH}\\{spec.path}'
+            if os.path.exists(folder_path) and os.path.isdir(folder_path):
+                os.system(f'explorer "{os.path.abspath(folder_path)}"')
+            else:
+                # TODO: Logging
+                os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+                print(colored("Invalid path or file type.", 'red'))
+                input()
+        except:
+            # TODO: Logging
+            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            print(colored("Invalid path or file type.", 'red'))
+            input()
+
+    @staticmethod
+    def __img_command(spec: Specification):
+        try:
+            img_path = f'{IES_FOLDER_PATH}\\{spec.path}\\Diagram.jpg'
+            img = Image.open(img_path)
+            img.show()
+        except:
+            # TODO: Logging
+            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+            print(colored("Error occured while opening image.", 'red'))
+            input()
+
+    @staticmethod
+    def __load_command(spec: Specification):
+        common.TRANSFER_TO_GENERATOR = spec

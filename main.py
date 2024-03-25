@@ -2,14 +2,16 @@ import os
 
 from inquirer2 import prompt
 
-from data_reader.reader import DataReader
-from stock_analizer.analizer import Analyzer
+import common
 from code_generator.generator import Generator
 from data_manager.data_manager import DataManager
 
 
 def main():
     while True:
+        if common.TRANSFER_TO_GENERATOR:
+            Generator.start_app(True)
+
         os.system('cls' if os.name in ('nt', 'dos') else 'clear')
         questions = [
             {
@@ -19,7 +21,6 @@ def main():
                 'choices': [
                     'Code Generator',
                     'Data Manager',
-                    'Stock Analyzer',
                     'Quit',
                 ],
             },
@@ -29,12 +30,10 @@ def main():
 
         choice = answers['menu_choice']
 
-        if choice == 'Stock Analyzer':
-            Analyzer.start_app()
+        if choice == 'Code Generator':
+            Generator.start_app()
         elif choice == 'Data Manager':
             DataManager.start_app()
-        elif choice == 'Code Generator':
-            Generator.start_app()
         elif choice == 'Quit':
             os.system('cls' if os.name in ('nt', 'dos') else 'clear')
             break

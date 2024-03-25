@@ -8,12 +8,14 @@ from inquirer2 import prompt as pmt
 import tkinter as tk
 from tkinter import filedialog
 
+import common
 from common.constants.templates import *
 from common.enums.enums import enums
 from common.models.concrete_class_data_point import ConcreteClassDataPoint
 from common.models.dms_type import DMSType
 from common.models.model_code import ModelCode
 from common.models.models import transform_properties, transformed_models
+from common.models.specification import Specification
 from data_manager.data_manager import DataManager
 from prompter.prompter import Prompter
 
@@ -59,9 +61,12 @@ class Generator:
     server_classes_codes = {}
 
     @staticmethod
-    def start_app() -> None:
-        Generator.__set_project_specification()
-        Generator.__generate_xml_data(1)  # need to call this so that we can scan all the project enums
+    def start_app(load_spec: bool = False) -> None:
+        if load_spec:
+            Generator.__load_project_specifications(common.TRANSFER_TO_GENERATOR)
+            common.TRANSFER_TO_GENERATOR = None
+        else:
+            Generator.__set_project_specification()
         Generator.__main_menu()
 
     @staticmethod
@@ -149,8 +154,19 @@ class Generator:
     def __get_project_specifications(manual_entry) -> None:
         if manual_entry:
             Generator.project_specification = Prompter.prompt_user_for_project_specification()
-        else:
-            Generator.project_specification = DataManager.select_specification_json_data()
+            Generator.transformed_project_specification = transform_properties(Generator.project_specification)
+            concrete_classes = {class_name: class_attribues for class_name, class_attribues in
+                                Generator.project_specification.items() if
+                                class_attribues[0][0] == 'concrete'}
+            Generator.transformed_concrete_classes = transform_properties(concrete_classes)
+            return
+
+        selected_specification = DataManager.select_specification()
+        Generator.__load_project_specifications(selected_specification)
+
+    @staticmethod
+    def __load_project_specifications(specification: Specification) -> None:
+        Generator.project_specification = specification.properties_to_json_data()
         Generator.transformed_project_specification = transform_properties(Generator.project_specification)
         concrete_classes = {class_name: class_attribues for class_name, class_attribues in
                             Generator.project_specification.items() if
