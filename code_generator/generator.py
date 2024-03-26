@@ -1,16 +1,16 @@
-import os
 import string
+import tkinter as tk
 from datetime import datetime, timedelta
 from random import randint, uniform, choice, sample
+from tkinter import filedialog
 
 import pyperclip
 from inquirer2 import prompt as pmt
-import tkinter as tk
-from tkinter import filedialog
 
 import common
 from common.constants.templates import *
 from common.enums.enums import enums
+from common.logging import *
 from common.models.concrete_class_data_point import ConcreteClassDataPoint
 from common.models.dms_type import DMSType
 from common.models.model_code import ModelCode
@@ -375,7 +375,7 @@ class Generator:
                 except KeyError:
                     err_msg = f"[ERROR]: Coudln't find a reference for {class_property['class_name']}_{class_property['property_name']}."
                     err_msg += f" Recommended action is to potentually expand the __reference_property_names_map."
-                    print(err_msg)
+                    log(err_msg, LogLevel.CRITICAL, also_log_to_file=True)
                     return err_msg
         elif type_ == 'reflist':
             return ''
@@ -387,7 +387,7 @@ class Generator:
             except KeyError:
                 err_msg = f"[ERROR]: Coudln't find enum {class_property['class_name']}_{class_property['property_name']}. (Enum: {type_})"
                 err_msg += f" Recommended action is to potentually expand the enums dictionary."
-                print(err_msg)
+                log(err_msg, LogLevel.CRITICAL, also_log_to_file=True)
                 return err_msg
 
     @staticmethod
@@ -529,6 +529,7 @@ class Generator:
         if not values:
             err_msg = f"[ERROR]: Coudln't find enum: {enum_name}."
             err_msg += f" Recommended action is to potentually expand the enums dictionary."
+            log(err_msg, LogLevel.CRITICAL, also_log_to_file=True)
             return err_msg
 
         cases_code = ''

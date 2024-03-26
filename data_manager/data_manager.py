@@ -1,22 +1,22 @@
 import json
-import os
+import pprint
 import re
-
-from PIL import Image
-from inquirer2 import prompt as pmt
 import tkinter as tk
 from tkinter import filedialog
+
+from PIL import Image
 from colorama import Fore, Style
-import pprint
+from inquirer2 import prompt as pmt
+from tabulate import tabulate
+from termcolor import colored
 
 import common
 from common.constants.constants import DATA_PATH, IES_FOLDER_PATH_FORWARD_SLASH, IES_FOLDER_PATH
 from common.enums.class_type import ClassType
+from common.logging import *
 from common.models.specification import Specification
-from prompter.prompter import Prompter
 from data_reader.reader import DataReader
-from tabulate import tabulate
-from termcolor import colored
+from prompter.prompter import Prompter
 
 
 class DataManager:
@@ -173,9 +173,7 @@ class DataManager:
         existing_data = DataManager.__load_project_specifications()
         for existing_spec in existing_data:
             if existing_spec['path'] == new_specification['path']:
-                os.system('cls' if os.name in ('nt', 'dos') else 'clear')
-                print(Fore.RED + 'Error: A specification with that path already exists!' + Style.RESET_ALL)
-                input()
+                log('Error: A specification with that path already exists!', LogLevel.CRITICAL)
                 return
 
         existing_data.append(new_specification)
@@ -223,9 +221,7 @@ class DataManager:
             input()
 
         except Exception as e:
-            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
-            print(Fore.RED + f"Error saving data to '{file_name}' at '{folder_path}': {e}" + Style.RESET_ALL)
-            input()
+            log(f"Error saving data to '{file_name}' at '{folder_path}': {e}", LogLevel.CRITICAL, also_log_to_file=True)
 
     @staticmethod
     def __copy_project_specification():
@@ -373,27 +369,19 @@ class DataManager:
             if os.path.exists(folder_path) and os.path.isdir(folder_path):
                 os.system(f'explorer "{os.path.abspath(folder_path)}"')
             else:
-                # TODO: Logging
-                os.system('cls' if os.name in ('nt', 'dos') else 'clear')
-                print(colored("Invalid path or file type.", 'red'))
-                input()
+                log(f"[DATA MANAGER]: Failed to open {os.path.abspath(folder_path)}", LogLevel.WARNING,
+                    also_log_to_file=True)
         except:
-            # TODO: Logging
-            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
-            print(colored("Invalid path or file type.", 'red'))
-            input()
+            log(f"[DATA MANAGER]: Failed to open folder", LogLevel.WARNING, also_log_to_file=True)
 
     @staticmethod
     def __img_command(spec: Specification):
+        img_path = f'{IES_FOLDER_PATH}\\{spec.path}\\Diagram.jpg'
         try:
-            img_path = f'{IES_FOLDER_PATH}\\{spec.path}\\Diagram.jpg'
             img = Image.open(img_path)
             img.show()
         except:
-            # TODO: Logging
-            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
-            print(colored("Error occured while opening image.", 'red'))
-            input()
+            log(f"[DATA MANAGER]: Failed to open image {img_path}", LogLevel.WARNING, also_log_to_file=True)
 
     @staticmethod
     def __load_command(spec: Specification):

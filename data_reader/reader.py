@@ -3,6 +3,8 @@ import os
 import re
 
 from common.constants.constants import DATA_PATH
+from common.enums.log_level import LogLevel
+from common.logging import log
 
 
 class DataReader:
@@ -56,9 +58,7 @@ class DataReader:
             os.makedirs(folder_path, exist_ok=True)  # Create folder if it doesn't exist
             data = []  # Initialize with an empty list if file doesn't exist
         except json.JSONDecodeError:
-            os.system('cls' if os.name in ('nt', 'dos') else 'clear')
-            print(f"Error decoding JSON in file '{file_name}'")
-            input()
+            log(f"Error decoding JSON in file '{file_name}'", LogLevel.WARNING, also_log_to_file=True)
             return None
 
         return data

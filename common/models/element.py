@@ -43,7 +43,6 @@ class Element:
             if data_type == type:
                 return value
 
-        # TODO: Logging
         return 'NOT FOUND'
 
     def __repr__(self):

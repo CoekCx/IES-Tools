@@ -1,3 +1,5 @@
+from common.models.element import Element
+
 models = {
     'IdentifiedObject': [
         ('', 'inheritance'),
@@ -337,6 +339,8 @@ models = {
 }
 
 classes = [x for x, y in models.items()]
+
+model_classes = [Element(name=key, data=value) for key, value in models.items()]
 
 
 def transform_properties(properties_list):
