@@ -1,5 +1,7 @@
 # IES-Tools
 
+![IES Tools Logo](IES%20Tools%20Logo.png)
+
 A comprehensive Python-based toolkit for automating project creation and management for the Data Models class in smartgrids.
 
 ## Overview
